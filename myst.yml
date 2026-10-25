@@ -1,6 +1,6 @@
 version: 1
 project:
-  title: Website Title
+  title: Geospatial Programming
   # authors:
   #   - name: Author Name
   copyright: '2026'
@@ -16,25 +16,52 @@ project:
     - CONDUCT.md
     - CONTRIBUTING.md
     - README.md
-  github: opengeos/myst-website-template
-  thebe:
-    binder:
-      repo: opengeos/myst-website-template
-      provider: github
-      url: https://mybinder.org
-      ref: main
+  github: diniyrti/geospatial-programming
+  # thebe:
+  #  binder:
+  #    repo: diniyrti/geospatial-programming
+  #    provider: github
+  #    url: https://mybinder.org
+  #    ref: main
   bibliography:
     - pages/references.bib
   toc:
     - file: index.md
-    - title: Preface
+    - title: Software Setup
       children:
-        - file: pages/preface.md
-    - title: Getting Started
+        - file: pages/software_setup/overview_tools.md
+        - file: pages/software_setup/python_package.md
+        - file: pages/software_setup/setting_ide.md
+        - file: pages/software_setup/using_google_colab.md
+        - file: pages/software_setup/using_gee.md
+        - file: pages/software_setup/vertion_control_git.md
+        - file: pages/software_setup/using_github.md
+        - file: pages/software_setup/troubleshooting.md 
+    - title: Python Programming Fundamentals
       children:
-        - file: pages/part01/getting-started.md
-        - file: pages/part01/installation.md
-    - title: Examples
+        - file: pages/python_fundamental/variabel_type_data.md
+        - file: pages/python_fundamental/struktur_data.md
+        - file: pages/python_fundamental/string_operation.md 
+        - file: pages/python_fundamental/looping-while.md
+        - file: pages/python_fundamental/functions_classes.md
+        - file: pages/python_fundamental/numpy.md
+        - file: pages/python_fundamental/pandas.md
+    - title: Javascript Programming Fundamentals
+      children:
+        - file: pages/part02/first-example.md
+    - title: Geospatial Programming with Python
+      children:
+        - file: pages/part02/first-example.md
+    - title: Geospatial Programming with GEE
+      children:
+        - file: pages/part02/first-example.md
+    - title: Shallow Learning for Geospatial
+      children:
+        - file: pages/part02/first-example.md
+    - title: Deep Learning for Geospatial
+      children:
+        - file: pages/part02/first-example.md
+    - title: Remote Sensing Applications
       children:
         - file: pages/part02/first-example.md
     - file: blog.md
@@ -58,3 +85,6 @@ site:
   template: book-theme
   parts:
     primary_sidebar_footer: ''
+    footer: |
+      [GitHub](https://github.com/diniyrti) |
+      [LinkedIn](https://www.linkedin.com/in/diniyarti/)

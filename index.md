@@ -5,40 +5,40 @@ subtitle: Diniyarti
 
 ## Introduction
 
-Welcome to the official repository for _**Website Title**_. This repository contains all the code examples featured in the book.
+Website ini berisi insight terkait pemrograman untuk analisis data geospasial dan penginderaan jauh. Materinya dimulai dari dasar Python dan JavaScript, dilanjutkan dengan Google Earth Engine (GEE), lalu penerapan *shallow learning* dan *deep learning* pada data spasial. Setiap bab dilengkapi contoh kode dan latihan yang bisa dipelajari secara mandiri.
 
 ---
 
-## Featured Projects
+## Tools yang Digunakan
 
 ::::{grid} 2 2 4 4
 
 :::{card}
-:link: https://mystmd.org
-![mystmd](pages/images/myst.webp)
-+++
-**MyST Markdown**
-:::
-
-:::{card}
-:link: https://jupyterbook.org
-![jupyter-book](pages/images/jupyter-book.webp)
-+++
-**Jupyter Book**
-:::
-
-:::{card}
-:link: https://jupyter.org
-![jupyter](pages/images/jupyter.webp)
-+++
-**Jupyter**
-:::
-
-:::{card}
-:link: https://python.org
-![python](pages/images/python.webp)
+:link: https://www.python.org/
+![mystmd](pages/images/python.webp)
 +++
 **Python**
+:::
+
+:::{card}
+:link: https://earthengine.google.com/
+![jupyter-book](https://ensinamentossa.com.br/wp-content/uploads/2022/12/earth-engine-logo.png)
++++
+**GEE**
+:::
+
+:::{card}
+:link: https://scikit-learn.org
+![jupyter](https://scikit-learn.org/stable/_static/scikit-learn-logo-without-subtitle.svg)
++++
+**Scikit-Learn**
+:::
+
+:::{card}
+:link: https://pytorch.org/
+![python](https://freepng.com/uploads/images/202605/pytorch-logo-png_340x.jpg)
++++
+**PyTorch**
 :::
 
 ::::
