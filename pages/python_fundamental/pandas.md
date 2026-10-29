@@ -454,3 +454,11 @@ df[["kota", "rata_jarak_km"]]
 - Keputusan menangani nilai kosong memengaruhi hasil analisis. Pilih dengan sadar dan catat.
 - Untuk CSV berformat Indonesia, gunakan `sep=";"` dan `decimal=","`.
 - Fungsi NumPy bisa dipakai langsung pada kolom DataFrame, sehingga kedua pustaka saling melengkapi.
+
+## Referensi
+
+Materi ini disusun dengan contoh lokal, dengan rujukan konsep dari:
+
+Wu, Q. (2025). *Introduction to GIS Programming: A Practical Python Guide to Open Source Geospatial Tools*. Independently published. ISBN 979-8286979455.
+
+Bacaan lanjut: [dokumentasi Pandas](https://pandas.pydata.org/docs/).

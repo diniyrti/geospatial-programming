@@ -51,10 +51,10 @@ project:
         - file: pages/part02/first-example.md
     - title: Geospatial Programming with Python
       children:
-        - file: pages/part02/first-example.md
+        - file: pages/geospatial_programming/xarray.md
     - title: Geospatial Programming with GEE
       children:
-        - file: pages/part02/first-example.md
+        - file: pages/goespatial_gee/klasifikasi_lc.md
     - title: Shallow Learning for Geospatial
       children:
         - file: pages/part02/first-example.md
