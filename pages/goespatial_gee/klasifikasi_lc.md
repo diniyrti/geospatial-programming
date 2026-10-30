@@ -902,7 +902,7 @@ var EVI = s2.expression(
 
 Jika kita perlu menghitung banyak indeks, penulisan rumus satu per satu dapat menjadi kurang praktis. Untuk mempermudah proses tersebut, kita dapat menggunakan *library* [Awesome Spectral Indices](https://github.com/awesome-spectral-indices/spectral).
 
-Dokumentasi daftar indeks tersedia di [Awesome Spectral Indices Documentation](https://awesome-ee-spectral-indices.readthedocs.io/en/latest/list.html).
+Dokumentasi daftar indeks tersedia di [Awesome Spectral Indices Documentation](https://awesome-spectral-indices.github.io/awesome-spectral-indices/indices/).
 
 Pertama, muat *library* tersebut:
 
@@ -1049,33 +1049,789 @@ Export.image.toDrive({
 
 # 4. Hyperparameter Tuning Random Forest
 
-Random Forest menggabungkan banyak pohon keputusan. Hyperparameter tuning membandingkan pengaturan model untuk mencari konfigurasi yang sesuai.
+## 4.1 Menyiapkan Data Prediktor
 
-## 4.1 Menentukan Parameter
-Menentukan parameter yang diuji, misalnya `numberOfTrees`, `variablesPerSplit`, dan `minLeafPopulation`.
+Pada tahap sebelumnya, kita telah membentuk beberapa kelompok prediktor yang berasal dari indeks spektral, data topografi, dan fitur tekstur. Seluruh prediktor perlu digabungkan menjadi satu citra agar dapat digunakan oleh model Random Forest.
 
-## 4.2 Membandingkan Konfigurasi
-Melatih dan mengevaluasi beberapa kombinasi parameter menggunakan data validasi.
+```javascript
+// Gabungkan indeks spektral, fitur topografi, dan tekstur
+var final_predictor = spectral_index
+  .addBands(topo)
+  .addBands(glcm_filter)
+  .toFloat();
 
-## 4.3 Memilih Model Terbaik
-Memilih konfigurasi berdasarkan metrik validasi. Data uji akhir tidak digunakan dalam proses tuning.
+// Periksa daftar band prediktor
+print(
+  'Daftar prediktor untuk klasifikasi:',
+  final_predictor.bandNames()
+);
+```
 
-> Kode tahap ini akan dilengkapi setelah skrip tuning diberikan.
+Fungsi `addBands()` digunakan untuk menggabungkan band dari beberapa citra menjadi satu citra prediktor. Selanjutnya, `bandNames()` digunakan untuk memeriksa seluruh prediktor yang tersedia.
+
+## 4.2 Membagi Data Latih dan Data Uji
+
+Sebelum melatih model, data sampel dibagi menjadi dua kelompok, yaitu data latih (*training data*) dan data uji (*testing data*).
+
+- **Data latih** digunakan untuk membangun model klasifikasi.
+- **Data uji** digunakan untuk mengevaluasi kemampuan model dalam memprediksi sampel yang tidak digunakan selama pelatihan.
+
+Pada praktikum ini, data dibagi dengan proporsi 70% untuk pelatihan dan 30% untuk pengujian.
+
+```javascript
+// Muat data sampel
+var titik_sampel = ee.FeatureCollection(
+  'projects/ee-diniyarti/assets/aoi_kambera'
+);
+
+// Tambahkan kolom acak untuk membagi data
+var random_col = titik_sampel.randomColumn('random', 42);
+
+// 70% untuk data latih
+var titik_latih = random_col.filter(
+  ee.Filter.lt('random', 0.7)
+);
+
+// 30% untuk data uji
+var titik_tes = random_col.filter(
+  ee.Filter.gte('random', 0.7)
+);
+```
+
+Fungsi `randomColumn()` menambahkan nilai acak pada setiap fitur. Nilai tersebut digunakan untuk menentukan apakah sampel masuk ke kelompok pelatihan atau pengujian.
+
+Parameter `42` merupakan *random seed*, yaitu nilai yang membantu menghasilkan pembagian acak yang dapat direproduksi kembali.
+
+Selanjutnya, ekstrak nilai prediktor pada masing-masing kelompok sampel.
+
+```javascript
+// Ekstrak nilai prediktor untuk data latih
+var training = final_predictor.sampleRegions({
+  collection: titik_latih,
+  properties: ['ID_Kelas'],
+  scale: 20,
+  tileScale: 16
+});
+
+// Ekstrak nilai prediktor untuk data uji
+var test = final_predictor.sampleRegions({
+  collection: titik_tes,
+  properties: ['ID_Kelas'],
+  scale: 20,
+  tileScale: 16
+});
+```
+
+Fungsi `sampleRegions()` mengambil nilai setiap band prediktor pada lokasi sampel dan menggabungkannya dengan atribut kelas yang terdapat pada data sampel. Dalam contoh ini, `ID_Kelas` digunakan sebagai label referensi untuk pelatihan dan evaluasi model.
+
+Parameter `scale: 20` menentukan skala nominal pengambilan sampel sebesar 20 meter, sedangkan `tileScale` dapat membantu mengatasi keterbatasan memori pada proses komputasi.
+
+**Penting:** Pembagian acak berdasarkan titik tidak selalu menjamin independensi spasial. Jika beberapa titik berasal dari lokasi yang berdekatan, data latih dan data uji dapat memiliki karakteristik yang sangat mirip. Untuk evaluasi yang lebih kuat, pembagian spasial dapat dipertimbangkan.
+
+## 4.3 Hyperparameter Tuning dengan Grid Search
+
+Random Forest memiliki sejumlah parameter yang dapat memengaruhi hasil klasifikasi. Pada praktikum ini, kita menguji dua parameter utama:
+
+| Parameter | Fungsi |
+|---|---|
+| `numberOfTrees` | Menentukan jumlah pohon keputusan yang digunakan dalam Random Forest. |
+| `variablesPerSplit` | Menentukan jumlah variabel prediktor yang dipertimbangkan pada setiap proses pemisahan node. |
+
+Secara umum, jumlah pohon yang lebih banyak dapat membuat prediksi lebih stabil, tetapi juga meningkatkan waktu komputasi. Sementara itu, jumlah variabel yang dipertimbangkan pada setiap pemisahan dapat memengaruhi keragaman pohon dan kemampuan model membedakan kelas.
+
+Tidak ada satu kombinasi parameter yang selalu terbaik untuk semua wilayah dan dataset. Karena itu, parameter perlu diuji dan dibandingkan menggunakan data evaluasi.
+
+#### A. Menentukan Rentang Parameter
+
+Pertama, tentukan nilai parameter yang akan diuji.
+
+```javascript
+// Rentang jumlah pohon
+var numTreesList = ee.List.sequence(100, 500, 100);
+
+// Rentang jumlah variabel pada setiap pemisahan
+var variablesplit = ee.List.sequence(2, 10, 2);
+```
+
+Rentang tersebut menghasilkan lima nilai jumlah pohon, yaitu 100, 200, 300, 400, dan 500. Untuk parameter `variablesPerSplit`, nilai yang diuji adalah 2, 4, 6, 8, dan 10.
+
+Dengan demikian, terdapat 5 × 5 = 25 kombinasi parameter yang akan diuji.
+
+#### B. Melakukan Grid Search
+
+Google Earth Engine tidak menyediakan satu fungsi khusus yang secara otomatis menjalankan seluruh proses *Grid Search* untuk kasus ini. Oleh karena itu, kita dapat membuat perulangan menggunakan `map()` untuk membangun dan mengevaluasi model pada setiap kombinasi parameter.
+
+```javascript
+var accuracies = numTreesList.map(function(numTrees) {
+  return variablesplit.map(function(variablesPerSplit) {
+
+    // Bangun model Random Forest
+    var classifier = ee.Classifier.smileRandomForest({
+      numberOfTrees: numTrees,
+      variablesPerSplit: variablesPerSplit
+    }).train({
+      features: training,
+      classProperty: 'ID_Kelas',
+      inputProperties: final_predictor.bandNames()
+    });
+
+    // Evaluasi model menggunakan data uji
+    var accuracy = test
+      .classify(classifier)
+      .errorMatrix('ID_Kelas', 'classification')
+      .accuracy();
+
+    // Simpan hasil pengujian
+    return ee.Feature(null, {
+      accuracy: accuracy,
+      numberOfTrees: numTrees,
+      variableSplit: variablesPerSplit
+    });
+  });
+}).flatten();
+
+// Ubah hasil menjadi FeatureCollection
+var accuraciesFC = ee.FeatureCollection(accuracies);
+
+print('Hasil Grid Search:', accuraciesFC);
+```
+
+Kode tersebut menguji setiap kombinasi parameter dengan melatih model menggunakan data latih, kemudian menghitung *overall accuracy* pada data uji.
+
+Fungsi `errorMatrix()` membandingkan label referensi dengan hasil prediksi. Selanjutnya, `accuracy()` menghitung proporsi sampel yang diklasifikasikan dengan benar.
+
+Hasil dari setiap kombinasi disimpan dalam `FeatureCollection` agar dapat dibandingkan dan divisualisasikan.
+
+**Catatan metodologis:** Pada contoh ini, data uji digunakan untuk memilih parameter terbaik sekaligus mengevaluasi model.
+
+#### C. Membandingkan Hasil Hyperparameter Tuning
+
+Untuk memahami pengaruh parameter, kita dapat membuat grafik yang menunjukkan hubungan antara jumlah pohon dan akurasi model.
+
+```javascript
+var chart1 = ui.Chart.feature.groups({
+  features: accuraciesFC,
+  xProperty: 'numberOfTrees',
+  yProperty: 'accuracy',
+  seriesProperty: 'variableSplit'
+}).setOptions({
+  title: 'Hyperparameter Tuning: Akurasi vs Jumlah Pohon',
+  vAxis: {
+    title: 'Overall Accuracy'
+  },
+  hAxis: {
+    title: 'Jumlah Pohon (numberOfTrees)'
+  },
+  lineWidth: 2,
+  pointSize: 4
+});
+
+print(chart1);
+```
+
+Pada grafik tersebut, sumbu X menunjukkan jumlah pohon, sedangkan sumbu Y menunjukkan *overall accuracy*. Setiap seri mewakili nilai `variablesPerSplit` yang berbeda.
+
+Grafik ini membantu kita mengamati apakah peningkatan jumlah pohon diikuti oleh peningkatan akurasi, serta apakah pengaruhnya berbeda pada setiap nilai `variablesPerSplit`.
+
+Kita juga dapat membandingkan akurasi berdasarkan jumlah variabel yang dipertimbangkan pada setiap pemisahan.
+
+```javascript
+var chart2 = ui.Chart.feature.groups({
+  features: accuraciesFC,
+  xProperty: 'variableSplit',
+  yProperty: 'accuracy',
+  seriesProperty: 'numberOfTrees'
+}).setOptions({
+  title: 'Hyperparameter Tuning: Akurasi vs Variables per Split',
+  vAxis: {
+    title: 'Overall Accuracy'
+  },
+  hAxis: {
+    title: 'Variables per Split'
+  },
+  lineWidth: 2,
+  pointSize: 4
+});
+
+print(chart2);
+```
+
+Gunakan kedua grafik tersebut untuk mengidentifikasi kombinasi parameter yang menghasilkan akurasi tertinggi. Perlu diingat bahwa selisih akurasi yang kecil belum tentu menunjukkan peningkatan kinerja yang berarti secara statistik.
+
+## 4.4 Memilih Kombinasi Parameter Terbaik
+
+Setelah seluruh kombinasi diuji, urutkan hasil berdasarkan akurasi dari nilai tertinggi ke terendah. Kombinasi pada urutan pertama dipilih sebagai kandidat parameter terbaik.
+
+```javascript
+// Urutkan berdasarkan akurasi tertinggi
+var bestCombo = accuraciesFC
+  .sort('accuracy', false)
+  .first();
+
+// Periksa parameter terbaik
+print('Kombinasi Parameter Terbaik:', bestCombo);
+```
+
+Hasilnya memuat nilai akurasi serta kombinasi `numberOfTrees` dan `variableSplit` yang menghasilkan akurasi tertinggi dalam pengujian.
+
+**Catatan:** Parameter yang terpilih merupakan kombinasi terbaik di antara nilai yang diuji, bukan jaminan bahwa kombinasi tersebut merupakan parameter optimal untuk semua kemungkinan nilai.
+
+## 4.5 Melatih Model Final dan Melakukan Klasifikasi
+
+Setelah kombinasi parameter dipilih, latih kembali model Random Forest menggunakan parameter tersebut.
+
+```javascript
+// Ambil parameter terbaik
+var bestNumTrees = bestCombo.getNumber('numberOfTrees');
+var bestVarSplit = bestCombo.getNumber('variableSplit');
+
+// Latih model final
+var model_rf_final = ee.Classifier.smileRandomForest({
+  numberOfTrees: bestNumTrees,
+  variablesPerSplit: bestVarSplit
+}).train({
+  features: training,
+  classProperty: 'ID_Kelas',
+  inputProperties: final_predictor.bandNames()
+});
+```
+
+Model yang dihasilkan kemudian diterapkan pada seluruh citra prediktor.
+
+```javascript
+// Terapkan model pada seluruh wilayah studi
+var klasifikasi_final = final_predictor.classify(model_rf_final);
+```
+
+Fungsi `classify()` menerapkan model Random Forest pada setiap piksel yang memiliki nilai prediktor. Hasilnya adalah citra klasifikasi yang berisi label kelas untuk setiap piksel.
+
+#### Menampilkan Hasil Klasifikasi
+
+Gunakan warna yang konsisten dengan skema klasifikasi yang telah ditetapkan sebelumnya.
+
+```javascript
+var visParams = {
+  min: 1,
+  max: 9,
+  palette: [
+    '#023f02',
+    '#058e72',
+    '#1E8C1E',
+    '#A8C040',
+    '#D4E800',
+    '#F5C518',
+    '#e80707',
+    '#a65f04',
+    '#0000FF'
+  ]
+};
+
+Map.centerObject(aoi, 11);
+
+Map.addLayer(
+  klasifikasi_final,
+  visParams,
+  'Peta Klasifikasi Final'
+);
+```
+
+Peta yang dihasilkan memperlihatkan distribusi spasial sembilan kelas penutup lahan pada wilayah studi. Hasil ini selanjutnya perlu dievaluasi menggunakan data referensi yang tidak digunakan untuk melatih model.
+
+## 4.6 Evaluasi Akurasi Klasifikasi
+
+Evaluasi dilakukan untuk mengetahui seberapa baik model mengklasifikasikan sampel yang tidak digunakan selama pelatihan.
+
+Pada tahap ini, model final diterapkan pada data uji, kemudian hasil prediksinya dibandingkan dengan label referensi.
+
+```javascript
+// Prediksi kelas pada data uji
+var validated = test.classify(model_rf_final);
+
+// Buat confusion matrix
+var finalErrorMatrix = validated.errorMatrix(
+  'ID_Kelas',
+  'classification'
+);
+
+// Tampilkan confusion matrix
+print('Confusion Matrix:', finalErrorMatrix);
+
+// Overall Accuracy
+print(
+  'Overall Accuracy:',
+  finalErrorMatrix.accuracy()
+);
+
+// Kappa
+print(
+  'Kappa:',
+  finalErrorMatrix.kappa()
+);
+```
+
+*Confusion matrix* menunjukkan hubungan antara kelas referensi dan kelas hasil prediksi. Matriks ini dapat digunakan untuk melihat kelas yang sering tertukar dengan kelas lainnya.
+
+Beberapa metrik yang dapat digunakan untuk mengevaluasi hasil klasifikasi adalah:
+
+- **Overall Accuracy (OA):** proporsi seluruh sampel uji yang diklasifikasikan dengan benar.
+- **Producer's Accuracy (PA):** menunjukkan proporsi sampel referensi suatu kelas yang berhasil dipetakan dengan benar.
+- **User's Accuracy (UA):** menunjukkan proporsi sampel yang dipetakan ke suatu kelas dan benar-benar termasuk kelas tersebut berdasarkan data referensi.
+- **Kappa:** ukuran kesepakatan klasifikasi yang memperhitungkan kesepakatan yang mungkin terjadi secara kebetulan.
+
+Untuk menghitung akurasi pada tingkat kelas:
+
+```javascript
+var producersAccuracy = finalErrorMatrix
+  .producersAccuracy()
+  .toList()
+  .flatten();
+
+var consumersAccuracy = finalErrorMatrix
+  .consumersAccuracy()
+  .toList()
+  .flatten();
+
+print(
+  'Producer Accuracy:',
+  producersAccuracy
+);
+
+print(
+  'User Accuracy:',
+  consumersAccuracy
+);
+```
+
+Pada Google Earth Engine, `consumersAccuracy()` digunakan untuk memperoleh nilai yang lazim disebut *User's Accuracy*. Nilai tersebut membantu mengidentifikasi kelas yang hasil pemetaannya memiliki proporsi kesalahan relatif tinggi.
+
+**Penting:** Hasil evaluasi hanya dapat dianggap representatif apabila data uji benar-benar independen dari proses pelatihan dan pemilihan parameter. Jika data uji telah digunakan untuk *Grid Search*, akurasi yang diperoleh dapat memberikan gambaran yang terlalu optimistis mengenai kemampuan generalisasi model.
+
+## 4.7 Menganalisis Kontribusi Prediktor
+
+Selain mengevaluasi akurasi, kita dapat memeriksa tingkat kepentingan relatif setiap prediktor dalam model Random Forest.
+
+Informasi ini dapat diperoleh melalui fungsi `explain()`.
+
+```javascript
+// Ambil informasi model
+var explain = model_rf_final.explain();
+
+// Ambil nilai importance setiap prediktor
+var featureImportance = ee.Dictionary(
+  explain.get('importance')
+);
+
+// Ubah menjadi FeatureCollection
+var importanceFC = ee.FeatureCollection(
+  featureImportance.keys().map(function(key) {
+    return ee.Feature(null, {
+      band_name: key,
+      importance: featureImportance.get(key)
+    });
+  })
+);
+
+// Urutkan dari importance tertinggi
+var importanceCollection = importanceFC
+  .sort('importance', false);
+
+print(
+  'Kontribusi relatif prediktor:',
+  importanceCollection
+);
+```
+
+Nilai *importance* memberikan gambaran mengenai kontribusi relatif setiap prediktor dalam model. Prediktor dengan nilai lebih tinggi memiliki kontribusi lebih besar menurut ukuran kepentingan yang digunakan oleh implementasi Random Forest tersebut.
+
+Untuk memudahkan interpretasi, hasilnya dapat ditampilkan sebagai grafik batang.
+
+```javascript
+var importanceChart = ui.Chart.feature.byFeature({
+  features: importanceCollection,
+  xProperty: 'band_name',
+  yProperties: ['importance']
+}).setOptions({
+  title: 'Kontribusi Relatif Prediktor',
+  hAxis: {
+    title: 'Prediktor'
+  },
+  vAxis: {
+    title: 'Importance'
+  },
+  legend: {
+    position: 'none'
+  }
+}).setChartType('BarChart');
+
+print(importanceChart);
+```
+
+Grafik tersebut membantu kita mengidentifikasi prediktor yang paling berkontribusi dalam model. Namun, nilai *importance* tidak membuktikan hubungan sebab-akibat dan dapat dipengaruhi oleh korelasi antarvariabel serta karakteristik data.
+
+## 4.8 Mengekspor Hasil Klasifikasi
+
+Setelah proses klasifikasi dan evaluasi selesai, hasil klasifikasi dapat diekspor ke Google Drive dalam format GeoTIFF.
+
+```javascript
+Export.image.toDrive({
+  image: klasifikasi_final,
+  description: 'Klasifikasi_Kambera_S2_2025',
+  scale: 20,
+  region: aoi.geometry(),
+  folder: 'Earth Engine',
+  crs: 'EPSG:4326',
+  fileFormat: 'GeoTIFF',
+  formatOptions: {
+    cloudOptimized: true
+  }
+});
+```
+
+Parameter `scale: 20` menentukan resolusi spasial nominal keluaran sebesar 20 meter. Parameter `region` menentukan wilayah yang diekspor, sedangkan `crs` menentukan sistem koordinat file keluaran.
+
+Opsi `cloudOptimized: true` menghasilkan GeoTIFF yang dioptimalkan untuk akses data secara efisien pada perangkat lunak yang mendukung Cloud Optimized GeoTIFF (COG).
+
+Setelah kode dijalankan, periksa tab **Tasks** pada Code Editor GEE dan jalankan tugas ekspor. File hasil klasifikasi dapat digunakan untuk visualisasi, pemeriksaan kualitas, dan analisis lanjutan di perangkat lunak GIS.
 
 # 5. Uji Akurasi Tematik
 
-Tahap ini mengukur kesesuaian hasil klasifikasi dengan data referensi yang independen.
 
-## 5.1 Membuat Confusion Matrix
-Membandingkan kelas hasil prediksi dengan kelas referensi.
+Uji akurasi tematik dilakukan untuk mengetahui seberapa baik hasil klasifikasi penutup lahan merepresentasikan kondisi aktual di lapangan atau pada data referensi. Pada praktikum ini, hasil klasifikasi Random Forest akan dibandingkan dengan data penguji akurasi yang telah disiapkan secara terpisah.
 
-## 5.2 Menghitung Metrik Akurasi
-Menghitung Overall Accuracy, Producer's Accuracy, dan User's Accuracy. F1-score dapat ditambahkan jika diperlukan.
+Evaluasi dilakukan menggunakan *confusion matrix* untuk memperoleh beberapa indikator, yaitu **Overall Accuracy (OA)**, **Producer's Accuracy (PA)**, **User's Accuracy (UA)**, dan **Kappa Coefficient**. Selain itu, F1-score dihitung untuk merangkum keseimbangan antara Producer's Accuracy dan User's Accuracy pada setiap kelas.
 
-## 5.3 Menginterpretasikan Hasil
-Menilai kelas yang sering tertukar dan keterbatasan peta klasifikasi.
+## 5.1 Menyiapkan Data Penguji Akurasi
 
-> Kode tahap ini akan dilengkapi setelah skrip uji akurasi diberikan. Gunakan data uji yang tidak dipakai untuk pelatihan atau tuning.
+Langkah pertama adalah memuat data penguji akurasi yang telah disiapkan sebelumnya dan disimpan sebagai *asset* di Google Earth Engine (GEE). Data ini harus memiliki atribut `ID_Kelas` sebagai kode kelas dan `KelasTupla` sebagai nama kelas penutup lahan.
+
+```javascript
+// Memuat data penguji akurasi
+var ground_ref = ee.FeatureCollection(
+  'projects/ee-agilfahrezy60/assets/Sesi2_Data_Penguji_Akurasi'
+);
+
+// Memeriksa jumlah sampel untuk setiap kelas
+print(
+  'Jumlah Sampel Per Kelas:',
+  ground_ref.aggregate_histogram('ID_Kelas')
+);
+
+// Memeriksa ID dan nama kelas
+var uniqueClasses = ground_ref.distinct('ID_Kelas');
+
+print('ID Kelas:', uniqueClasses.aggregate_array('ID_Kelas'));
+print('Nama Kelas:', uniqueClasses.aggregate_array('KelasTupla'));
+```
+
+Pemeriksaan ini bertujuan untuk memastikan bahwa data penguji akurasi memiliki atribut kelas yang sesuai dengan skema klasifikasi. Distribusi sampel setiap kelas juga perlu diperhatikan agar kelas yang jumlah sampelnya terlalu sedikit dapat diidentifikasi sebelum evaluasi dilakukan.
+
+**Catatan:** `aggregate_histogram('ID_Kelas')` menghitung jumlah fitur untuk setiap nilai kelas. Sementara itu, `distinct('ID_Kelas')` mengambil satu fitur untuk setiap ID kelas yang unik. Kedua perintah tersebut membantu memeriksa data referensi sebelum digunakan dalam evaluasi.
+
+## 5.2 Memuat Hasil Klasifikasi
+
+Selanjutnya, muat peta penutup lahan hasil klasifikasi yang akan diuji. Pada contoh ini, peta klasifikasi Kambera tahun 2025 telah disimpan sebagai *asset* di GEE.
+
+```javascript
+// Memuat hasil klasifikasi
+var lulcRaw = ee.Image(
+  'projects/ee-agilfahrezy60/assets/Klasifikasi_Kambera_2025_S2'
+);
+
+// Menghilangkan piksel NoData yang memiliki nilai 0
+var lulc = lulcRaw.updateMask(lulcRaw.neq(0));
+```
+
+Piksel bernilai `0` dikeluarkan dari analisis karena pada contoh ini nilai tersebut digunakan sebagai penanda NoData, bukan sebagai kelas penutup lahan.
+
+Penggunaan `updateMask()` memastikan bahwa piksel tersebut tidak ikut diperlakukan sebagai hasil klasifikasi ketika nilai kelas diambil untuk proses evaluasi.
+
+**Penting:** Pastikan nilai `0` memang merupakan NoData pada peta klasifikasi. Jika `0` merupakan kelas yang valid, penggunaan mask tersebut akan menghilangkan kelas itu dari evaluasi.
+
+## 5.3 Memvisualisasikan Hasil Klasifikasi dan Data Referensi
+
+Sebelum menghitung akurasi, tampilkan peta klasifikasi dan lokasi sampel penguji pada peta GEE. Visualisasi ini membantu memeriksa apakah lokasi sampel berada pada wilayah studi yang sesuai dan apakah sebarannya cukup mewakili kelas-kelas penutup lahan yang akan dievaluasi.
+
+Skema klasifikasi yang digunakan terdiri atas sembilan kelas.
+
+| ID Kelas | Nama Kelas | Warna |
+|---:|---|---|
+| 1 | Hutan Lahan Kering | `#023f02` |
+| 2 | Hutan Mangrove | `#058e72` |
+| 3 | Kebun Campur | `#1E8C1E` |
+| 4 | Padang Rumput | `#A8C040` |
+| 5 | Pertanian Lahan Kering | `#D4E800` |
+| 6 | Sawah | `#F5C518` |
+| 7 | Lahan Terbangun | `#e80707` |
+| 8 | Lahan Terbuka | `#a65f04` |
+| 9 | Badan Air | `#0000FF` |
+
+Daftar kelas tersebut digunakan untuk mengatur warna hasil klasifikasi dan memberikan warna yang sesuai pada sampel referensi.
+
+```javascript
+// Skema kelas penutup lahan
+var kelas = [
+  {id: 1, name: 'Hutan Lahan Kering',     color: '#023f02'},
+  {id: 2, name: 'Hutan Mangrove',         color: '#058e72'},
+  {id: 3, name: 'Kebun Campur',           color: '#1E8C1E'},
+  {id: 4, name: 'Padang Rumput',          color: '#A8C040'},
+  {id: 5, name: 'Pertanian Lahan Kering', color: '#D4E800'},
+  {id: 6, name: 'Sawah',                  color: '#F5C518'},
+  {id: 7, name: 'Lahan Terbangun',        color: '#e80707'},
+  {id: 8, name: 'Lahan Terbuka',          color: '#a65f04'},
+  {id: 9, name: 'Badan Air',              color: '#0000FF'}
+];
+
+// Menyiapkan daftar ID, nama, dan warna kelas
+var jumlah_kelas = kelas.length;
+var id_kelas = kelas.map(function(c) {
+  return c.id;
+});
+var nama_kelas = kelas.map(function(c) {
+  return c.name;
+});
+var warna = kelas.map(function(c) {
+  return c.color;
+});
+
+// Membuat dictionary warna berdasarkan ID kelas
+var color_dict = ee.Dictionary(
+  kelas.reduce(function(acc, c) {
+    acc[c.id.toString()] = c.color;
+    return acc;
+  }, {})
+);
+
+// Menampilkan hasil klasifikasi
+Map.addLayer(
+  lulc,
+  {min: 1, max: 9, palette: warna},
+  'Klasifikasi LULC 2025'
+);
+
+// Memberikan warna pada sampel referensi berdasarkan kelas
+var groundStyled = ground_ref.map(function(f) {
+  var key = f.getNumber('ID_Kelas').int().format('%d');
+  var color = color_dict.getString(key);
+
+  return f.set('style', {
+    color: color,
+    fillColor: color,
+    pointSize: 5,
+    width: 1.2
+  });
+});
+
+// Menampilkan sampel referensi
+Map.addLayer(
+  groundStyled.style({styleProperty: 'style'}),
+  {},
+  'Data Validasi (per kelas)'
+);
+
+Map.centerObject(ground_ref, 10);
+```
+
+Untuk memudahkan interpretasi peta, tambahkan legenda yang menjelaskan warna setiap kelas.
+
+```javascript
+// Membuat kotak warna untuk legenda
+var makeColorBox = function(hexColor) {
+  return ui.Label('', {
+    backgroundColor: hexColor,
+    padding: '8px',
+    margin: '0 6px 2px 0',
+    border: '1px solid rgba(0,0,0,0.25)'
+  });
+};
+
+// Membuat panel legenda
+var legend = ui.Panel({
+  style: {
+    position: 'bottom-right',
+    padding: '8px 12px',
+    backgroundColor: 'white',
+    border: '1px solid #bbb'
+  }
+});
+
+// Menambahkan judul legenda
+legend.add(ui.Label('Kelas Penutup Lahan', {
+  fontWeight: 'bold',
+  fontSize: '11px',
+  margin: '0 0 6px 0'
+}));
+
+// Menambahkan nama dan warna setiap kelas
+for (var li = 0; li < jumlah_kelas; li++) {
+  legend.add(ui.Panel({
+    widgets: [
+      makeColorBox(warna[li]),
+      ui.Label(nama_kelas[li], {
+        fontSize: '10px',
+        margin: '2px 0'
+      })
+    ],
+    layout: ui.Panel.Layout.Flow('horizontal')
+  }));
+}
+
+legend.add(ui.Label('', {
+  border: '0.5px solid #ddd',
+  margin: '4px 0'
+}));
+
+Map.add(legend);
+```
+
+Setelah peta ditampilkan, periksa kesesuaian posisi sampel referensi dengan wilayah studi dan hasil klasifikasi. Visualisasi ini merupakan pemeriksaan awal, bukan pengganti perhitungan akurasi secara kuantitatif.
+
+## 5.4 Menghitung Akurasi Tematik
+
+Pada tahap ini, nilai kelas hasil klasifikasi diambil dari lokasi sampel referensi. Nilai tersebut kemudian dibandingkan dengan label kelas aktual yang terdapat pada atribut `ID_Kelas`.
+
+Proses pengambilan nilai piksel dilakukan menggunakan `sampleRegions()`, sedangkan perbandingan kelas dilakukan menggunakan `errorMatrix()`.
+
+```javascript
+// Mengambil nama band hasil klasifikasi
+var classBand = lulc.bandNames().get(0);
+
+// Mengambil nilai piksel pada lokasi sampel referensi
+var sampled = lulc.sampleRegions({
+  collection: ground_ref,
+  properties: ['ID_Kelas'],
+  scale: 10,
+  tileScale: 4
+});
+
+// Menentukan urutan ID kelas untuk confusion matrix
+var order = ee.List(id_kelas);
+
+// Membuat confusion matrix
+var confMatrix = sampled.errorMatrix({
+  actual: 'ID_Kelas',
+  predicted: classBand,
+  order: order
+});
+
+// Menampilkan hasil evaluasi
+print('Uji Akurasi Tematik');
+print('Confusion Matrix:', confMatrix);
+print('Overall Accuracy:', confMatrix.accuracy());
+print('Kappa Coefficient:', confMatrix.kappa());
+print("Producer's Accuracy:", confMatrix.producersAccuracy());
+print("User's Accuracy:", confMatrix.consumersAccuracy());
+```
+
+**Memahami indikator akurasi**
+
+| Indikator | Penjelasan |
+|---|---|
+| Confusion Matrix | Tabel perbandingan kelas aktual dan kelas hasil klasifikasi. |
+| Overall Accuracy (OA) | Proporsi seluruh sampel yang diklasifikasikan dengan benar. |
+| Producer's Accuracy (PA) | Menggambarkan seberapa baik sampel aktual suatu kelas berhasil dikenali oleh klasifikasi. PA berkaitan dengan *omission error*. |
+| User's Accuracy (UA) | Menggambarkan peluang bahwa suatu sampel yang dipetakan sebagai kelas tertentu memang termasuk kelas tersebut menurut data referensi. UA berkaitan dengan *commission error*. |
+| Kappa Coefficient | Ukuran kesesuaian klasifikasi dan data referensi yang memperhitungkan kesesuaian yang mungkin terjadi secara kebetulan. |
+
+OA dihitung dari jumlah sampel yang terklasifikasi benar dibagi jumlah seluruh sampel yang dievaluasi. Sementara itu, PA dan UA dihitung untuk setiap kelas berdasarkan nilai dalam confusion matrix.
+
+Perlu diperhatikan bahwa `sampleRegions()` hanya menghasilkan sampel pada piksel yang tidak termask. Oleh karena itu, sampel yang berada pada piksel NoData tidak akan masuk ke dalam confusion matrix.
+
+## 5.5 Menghitung F1-Score dan Mengekspor Hasil Evaluasi
+
+Selain OA, PA, UA, dan Kappa, evaluasi juga dapat dilengkapi dengan F1-score. Metrik ini merupakan rata-rata harmonik antara PA dan UA sehingga membantu menilai keseimbangan kedua indikator tersebut pada setiap kelas.
+
+Rumus F1-score adalah:
+
+\[
+F1 = 2 \times \frac{PA \times UA}{PA + UA}
+\]
+
+Jika PA dan UA dinyatakan dalam persen, F1-score yang dihasilkan juga berada dalam persen.
+
+Berikutnya, hasil evaluasi disusun menjadi tabel yang memuat metrik untuk setiap kelas, kemudian diekspor sebagai file CSV agar dapat dianalisis lebih lanjut.
+
+```javascript
+// Mengambil metrik akurasi
+var oa = confMatrix.accuracy();
+var kappa = confMatrix.kappa();
+
+var pa = confMatrix.producersAccuracy().toList().flatten();
+var ua = confMatrix.consumersAccuracy().toList().flatten();
+
+// Menyusun tabel metrik untuk setiap kelas
+var barisKelas = order.map(function(id) {
+  var idx = ee.Number(id).subtract(1);
+
+  var paVal = ee.Number(pa.get(idx)).multiply(100);
+  var uaVal = ee.Number(ua.get(idx)).multiply(100);
+
+  // Menghitung F1-score
+  var jumlahAkurasi = paVal.add(uaVal);
+
+  var f1Val = ee.Algorithms.If(
+    jumlahAkurasi.gt(0),
+    ee.Number(2)
+      .multiply(paVal)
+      .multiply(uaVal)
+      .divide(jumlahAkurasi),
+    0
+  );
+
+  // Mengambil nama kelas
+  var nama = ee.List(nama_kelas).get(idx);
+
+  return ee.Feature(null, {
+    'Indikator_atau_Kelas': nama,
+    'ID_Kelas': id,
+    'Producer_Accuracy_Persen': paVal,
+    'User_Accuracy_Persen': uaVal,
+    'F1_Score_Persen': f1Val
+  });
+});
+
+// Menambahkan baris Overall Accuracy dan Kappa
+var barisTotal = ee.List([
+  ee.Feature(null, {
+    'Indikator_atau_Kelas': 'OVERALL ACCURACY',
+    'ID_Kelas': null,
+    'Producer_Accuracy_Persen': oa.multiply(100),
+    'User_Accuracy_Persen': null,
+    'F1_Score_Persen': null
+  }),
+  ee.Feature(null, {
+    'Indikator_atau_Kelas': 'KAPPA COEFFICIENT',
+    'ID_Kelas': null,
+    'Producer_Accuracy_Persen': kappa,
+    'User_Accuracy_Persen': null,
+    'F1_Score_Persen': null
+  })
+]);
+
+// Menggabungkan hasil metrik per kelas dan metrik keseluruhan
+var tabelAkurasi = ee.FeatureCollection(
+  barisKelas.cat(barisTotal)
+);
+
+// Mengekspor hasil evaluasi ke Google Drive
+Export.table.toDrive({
+  collection: tabelAkurasi,
+  description: 'Ringkasan_Akurasi_Kambera_2025',
+  fileFormat: 'CSV',
+  selectors: [
+    'Indikator_atau_Kelas',
+    'ID_Kelas',
+    'Producer_Accuracy_Persen',
+    'User_Accuracy_Persen',
+    'F1_Score_Persen'
+  ]
+});
+```
+
+Setelah kode dijalankan, buka tab **Tasks** di GEE Code Editor dan jalankan tugas ekspor. File CSV akan disimpan ke Google Drive sesuai dengan pengaturan ekspor.
+
+**Catatan interpretasi:** Nilai Kappa pada kode di atas diekspor dalam skala aslinya, bukan dikalikan 100. Dengan demikian, kolom `Producer_Accuracy_Persen` berisi nilai OA dalam persen pada baris *OVERALL ACCURACY*, tetapi berisi nilai Kappa pada skala aslinya pada baris *KAPPA COEFFICIENT*. Perhatikan perbedaan skala ini saat membaca tabel hasil.
+
+
 
 ---
 
