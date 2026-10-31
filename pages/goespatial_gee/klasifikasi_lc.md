@@ -1917,6 +1917,33 @@ Hasil perhitungan kemudian disusun menjadi tabel yang memuat ID kelas, nama kela
 
 **Catatan:** Pastikan variabel `lulc`, `geometry`, dan `nama_kelas` telah didefinisikan pada bagian sebelumnya. Perhitungan ini menggunakan resolusi spasial 20 meter dan wilayah analisis sesuai dengan `geometry`. Nilai luas yang dihasilkan merupakan estimasi luas berdasarkan piksel raster hasil klasifikasi.
 
+# 6. Menyimpan Model Random Forest
+Setelah proses hyperparameter tuning dan pelatihan model selesai, model Random Forest terbaik dapat disimpan sebagai asset di Google Earth Engine (GEE). Dengan menyimpan model, proses klasifikasi pada citra lain dapat dilakukan tanpa mengulang proses pelatihan dari awal.
+
+Gunakan fungsi Export.classifier.toAsset() untuk menyimpan model.
+
+```javascript
+// Menyimpan model Random Forest sebagai GEE Asset
+Export.classifier.toAsset({
+  classifier: model_rf_final,
+  description: 'RF_Model_Kambera_2025',
+  assetId: 'projects/ee-diniyarti/assets/RF_Model_Kambera_2025'
+});
+
+```
+
+Setelah kode dijalankan, buka tab Tasks pada GEE Code Editor dan jalankan proses ekspor. Model akan tersimpan sebagai asset dan dapat dipanggil kembali pada script lainnya.
+
+Untuk memuat model yang telah disimpan, gunakan kode berikut:
+
+```javascript
+// Memuat model Random Forest
+var model_RF = ee.Classifier.load(
+  'projectsprojects/ee-diniyarti/assets/RF_Model_Kambera_2025'
+);
+
+print('Model Random Forest:', model_RF);
+```
 ---
 
 
