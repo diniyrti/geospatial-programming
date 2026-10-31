@@ -420,11 +420,11 @@ dengan:
 - $K$ = jumlah kelas klasifikasi.
 
 
-Apabila sepertiga dari total sampel dialokasikan untuk pengujian (*testing*), jumlah sampel yang diperlukan perlu ditingkatkan. Dengan asumsi pembagian data sebesar dua pertiga untuk pelatihan dan sepertiga untuk pengujian, total sampel yang dibutuhkan adalah:
+Apabila sepertiga dari total sampel dialokasikan untuk pengujian (*testing*), jumlah sampel yang diperlukan perlu ditingkatkan. Dengan asumsi pembagian data sebesar dua pertiga untuk pelatihan dan sepertiga untuk pengujian.
 
 Selain itu, Jensen (2005) mengemukakan aturan praktis (*rule of thumb*) bahwa jumlah sampel pelatihan untuk setiap kelas setidaknya 10 kali jumlah saluran citra (*band*). Misalnya, jika citra yang digunakan memiliki 10 saluran, jumlah minimum sampel yang disarankan adalah 100 piksel per kelas.
 
-Dalam penerapannya, sampel sebaiknya tersebar pada beberapa lokasi yang mewakili variasi kondisi dalam kelas tersebut. Sebagai contoh, 100 piksel yang dikumpulkan dari 10 lokasi berbeda umumnya lebih representatif dibandingkan 100 piksel yang hanya berasal dari satu lokasi.
+Dalam penerapannya, sampel tersebar dan mewakili variasi kondisi dalam kelas tersebut. Sebagai contoh, 100 piksel yang dikumpulkan dari 10 lokasi berbeda umumnya lebih representatif dibandingkan 100 piksel yang hanya berasal dari satu lokasi.
 
 **Catatan:** Kedua pendekatan tersebut merupakan pedoman awal, bukan ketentuan mutlak. Jumlah sampel yang dibutuhkan bergantung pada kompleksitas wilayah, jumlah kelas, karakteristik data prediktor, dan variasi spektral setiap kelas. Sampel pengujian sebaiknya dipisahkan dari sampel pelatihan dan tidak digunakan untuk melatih model.
 
@@ -449,7 +449,7 @@ Alur umumnya:
 
 ### Opsi 2. Membuat sampel melalui Google Earth
 
-Google Earth Web dapat membantu mengenali objek di permukaan bumi melalui citra resolusi tinggi dan, jika tersedia terdapat Street View untuk mengidentifikasi kelas penutup lahan. Selain itu, salah satu keunggulan Google Earth adalah kemampuannya untuk share proyek dengan orang lain. Melalui fitur share proyek, kita dapat berkolaborasi dengan anggota tim untuk mengidentifikasi dan memetakan kelas tutupan lahan secara bersama-sama.
+Google Earth Web dapat membantu mengenali objek di permukaan bumi melalui citra resolusi tinggi dan, jika tersedia terdapat Street View untuk mengidentifikasi kelas penutup lahan. Selain itu, salah satu keunggulan Google Earth adalah kemampuannya untuk share proyek dengan orang lain. Melalui fitur share proyek, kita dapat berkolaborasi dengan anggota tim untuk mengidentifikasi dan membuat training dataset secara bersama-sama.
 
 Alur umumnya:
 
@@ -722,7 +722,7 @@ var s2 = ee.Image(
 .clip(aoi);
 ```
 
-Band yang digunakan mencakup spektrum visible, red-edge, NIR, dan SWIR. Kombinasi spektrum ini diharapkan mampu mengenai karakteristik permukaan bumi.
+Band yang digunakan mencakup spektrum visible, red-edge, NIR, dan SWIR. Kombinasi spektrum ini diharapkan mampu mengidentifikasi kelas penutup lahan yang akan diklasifikasi.
 
 ## 3.2 Fitur Topografi
 
@@ -761,11 +761,11 @@ var aspect = ee.Terrain.aspect(elev);
 - **Slope** menunjukkan kemiringan permukaan dalam derajat.
 - **Aspect** menunjukkan arah hadap lereng dalam derajat, dengan nilai yang merepresentasikan orientasi lereng.
 
-Kedua fitur tersebut dapat digunakan sebagai informasi tambahan untuk membedakan kondisi bentang alam.
+Kedua fitur tersebut dapat digunakan sebagai informasi tambahan untuk membedakan kondisi bentang alam yang memiliki korelasi terhadap kelas penutup lahan tertentu.
 
 #### C. Mengambil Data Bentuk Lahan
 
-Selain elevasi dan karakteristik lereng, kita menggunakan produk ALOS Landforms untuk memperoleh kategori bentuk lahan.
+Selain elevasi dan karakteristik lereng, kita menggunakan produk ALOS Landforms untuk memperoleh kategori bentuk lahan. Landform adalah bentuk atau kenampakan fisik permukaan bumi yang terbentuk melalui proses geomorfologi, seperti erosi, sedimentasi, aktivitas tektonik, dan proses vulkanisme (landform ex, lereng, bukit, dataran dll).
 
 ```javascript
 var landform = ee.Image(
@@ -951,12 +951,12 @@ Untuk klasifikasi penutup lahan, kita akan menambahkan beberapa indeks yang diha
 
 | Indeks | Tujuan umum |
 |---|---|
-| NDVI | Menonjolkan karakteristik vegetasi. |
-| NDREI | Memanfaatkan kanal red-edge untuk menganalisis karakteristik vegetasi. |
-| DBSI | Menonjolkan karakteristik lahan kering atau terbuka. |
-| MBI | Membantu membedakan karakteristik lahan terbuka dan area terbangun. |
-| BLFEI | Indeks yang digunakan untuk membantu membedakan karakteristik lahan terbangun dan lahan terbuka. |
-| MNDWI | Membantu menonjolkan karakteristik badan air. |
+| NDVI (Normalized Difference Vegetation Index) | Menonjolkan karakteristik vegetasi. |
+| NDREI (Normalized Difference Red Edge Index) | Memanfaatkan kanal red-edge untuk menganalisis karakteristik vegetasi. |
+| DBSI (Dry Built-up and Bare Soil Index) | Menonjolkan karakteristik lahan kering atau terbuka. |
+| MBI (Modified Bare Soil Index) | Membantu membedakan karakteristik lahan terbuka dan area terbangun. |
+| BLFEI (Built-up and Land Feature Extraction Index) | Indeks yang digunakan untuk membantu membedakan karakteristik lahan terbangun dan lahan terbuka. |
+| MNDWI (Modified Normalized Difference Water Index) | Membantu menonjolkan karakteristik badan air. |
 
 Perlu diingat bahwa kegunaan setiap indeks bergantung pada definisi rumus, band yang digunakan, dan kondisi wilayah penelitian. Indeks tidak selalu mampu memisahkan dua kelas secara sempurna.
 
@@ -1081,7 +1081,7 @@ Pada praktikum ini, data dibagi dengan proporsi 70% untuk pelatihan dan 30% untu
 ```javascript
 // Muat data sampel
 var titik_sampel = ee.FeatureCollection(
-  'projects/ee-diniyarti/assets/aoi_kambera'
+  'projects/ee-diniyarti/assets/sampel_latih_kambera'
 );
 
 // Tambahkan kolom acak untuk membagi data
@@ -1159,7 +1159,7 @@ Dengan demikian, terdapat 5 × 5 = 25 kombinasi parameter yang akan diuji.
 
 #### B. Melakukan Grid Search
 
-Google Earth Engine tidak menyediakan satu fungsi khusus yang secara otomatis menjalankan seluruh proses *Grid Search* untuk kasus ini. Oleh karena itu, kita dapat membuat perulangan menggunakan `map()` untuk membangun dan mengevaluasi model pada setiap kombinasi parameter.
+Google Earth Engine belum menyediakan satu fungsi khusus yang secara otomatis menjalankan seluruh proses *Grid Search* untuk kasus ini. Oleh karena itu, kita dapat membuat perulangan menggunakan `map()` untuk membangun dan mengevaluasi model pada setiap kombinasi parameter.
 
 ```javascript
 var accuracies = numTreesList.map(function(numTrees) {
@@ -1498,7 +1498,7 @@ Setelah kode dijalankan, periksa tab **Tasks** pada Code Editor GEE dan jalankan
 
 Uji akurasi tematik dilakukan untuk mengetahui seberapa baik hasil klasifikasi penutup lahan merepresentasikan kondisi aktual di lapangan atau pada data referensi. Pada praktikum ini, hasil klasifikasi Random Forest akan dibandingkan dengan data penguji akurasi yang telah disiapkan secara terpisah.
 
-Evaluasi dilakukan menggunakan *confusion matrix* untuk memperoleh beberapa indikator, yaitu **Overall Accuracy (OA)**, **Producer's Accuracy (PA)**, **User's Accuracy (UA)**, dan **Kappa Coefficient**. Selain itu, F1-score dihitung untuk merangkum keseimbangan antara Producer's Accuracy dan User's Accuracy pada setiap kelas.
+Evaluasi dilakukan menggunakan *confusion matrix* untuk memperoleh beberapa indikator, yaitu **Overall Accuracy (OA)**, **Producer's Accuracy (PA)**, **User's Accuracy (UA)**, dan **Kappa Coefficient**. Selain itu, **F1-score** dihitung untuk merangkum keseimbangan antara Producer's Accuracy dan User's Accuracy pada setiap kelas.
 
 ## 5.1 Menyiapkan Data Penguji Akurasi
 
@@ -1507,7 +1507,7 @@ Langkah pertama adalah memuat data penguji akurasi yang telah disiapkan sebelumn
 ```javascript
 // Memuat data penguji akurasi
 var ground_ref = ee.FeatureCollection(
-  'projects/ee-agilfahrezy60/assets/Sesi2_Data_Penguji_Akurasi'
+  'projects/ee-diniyarti/assets/sampel_validasi_kambera'
 );
 
 // Memeriksa jumlah sampel untuk setiap kelas
@@ -1534,7 +1534,7 @@ Selanjutnya, muat peta penutup lahan hasil klasifikasi yang akan diuji. Pada con
 ```javascript
 // Memuat hasil klasifikasi
 var lulcRaw = ee.Image(
-  'projects/ee-agilfahrezy60/assets/Klasifikasi_Kambera_2025_S2'
+  'projects/ee-diniyarti/assets/Klasifikasi_Kambera_S2_2025'
 );
 
 // Menghilangkan piksel NoData yang memiliki nilai 0
@@ -1742,9 +1742,9 @@ Selain OA, PA, UA, dan Kappa, evaluasi juga dapat dilengkapi dengan F1-score. Me
 
 Rumus F1-score adalah:
 
-\[
+$$
 F1 = 2 \times \frac{PA \times UA}{PA + UA}
-\]
+$$
 
 Jika PA dan UA dinyatakan dalam persen, F1-score yang dihasilkan juga berada dalam persen.
 
