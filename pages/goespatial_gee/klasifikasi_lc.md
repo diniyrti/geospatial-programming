@@ -1837,9 +1837,89 @@ Setelah kode dijalankan, buka tab **Tasks** di GEE Code Editor dan jalankan tuga
 
 **Catatan interpretasi:** Nilai Kappa pada kode di atas diekspor dalam skala aslinya, bukan dikalikan 100. Dengan demikian, kolom `Producer_Accuracy_Persen` berisi nilai OA dalam persen pada baris *OVERALL ACCURACY*, tetapi berisi nilai Kappa pada skala aslinya pada baris *KAPPA COEFFICIENT*. Perhatikan perbedaan skala ini saat membaca tabel hasil.
 
+## 5.6 Menghitung Luas Area Tutupan Lahan
 
+Setelah proses klasifikasi selesai, langkah selanjutnya adalah menghitung luas setiap kelas penutup lahan. Perhitungan luas dilakukan menggunakan fungsi `ee.Image.pixelArea()` untuk memperoleh luas setiap piksel dalam satuan meter persegi (m²). Nilai tersebut kemudian dikonversi menjadi hektar (ha) dengan membaginya menggunakan 10.000.
+
+Selanjutnya, luas piksel dikelompokkan berdasarkan nilai kelas hasil klasifikasi menggunakan `ee.Reducer.sum().group()`. Dengan demikian, GEE dapat menghitung total luas untuk setiap kelas penutup lahan pada wilayah studi.
+
+```javascript
+// Menghitung luas piksel dan mengonversi m2 menjadi hektar
+var class_areas = ee.Image.pixelArea()
+  .divide(10000)
+  .addBands(lulc)
+  .reduceRegion({
+    reducer: ee.Reducer.sum().group({
+      groupField: 1,
+      groupName: 'DN'
+    }),
+    geometry: geometry,
+    scale: 20,
+    maxPixels: 1e13
+  }).get('groups');
+
+print('Luas Setiap Kelas (Hektar):', class_areas);
+
+```
+
+```javascript
+// Mengubah hasil perhitungan luas menjadi FeatureCollection
+var areaList = ee.List(class_areas);
+
+var areaTable = ee.FeatureCollection(
+  areaList.map(function(item) {
+
+    var dict = ee.Dictionary(item);
+
+    // Mengambil ID kelas dan luasnya
+    var id = ee.Number(dict.get('DN'));
+    var area_ha = ee.Number(dict.get('sum'));
+
+    // Mengambil nama kelas berdasarkan ID
+    var nama = ee.List(nama_kelas).get(id.subtract(1));
+
+    return ee.Feature(null, {
+      'ID_Kelas': id,
+      'Nama_Kelas': nama,
+      'Luas_ha': area_ha
+    });
+  })
+);
+
+// Menampilkan tabel luas penggunaan lahan
+print('Tabel Luas Penggunaan Lahan:', areaTable);
+```
+
+
+```javascript
+// Mengekspor tabel luas ke Google Drive
+Export.table.toDrive({
+  collection: areaTable,
+  description: 'Luas_LULC_Hektar',
+  folder: 'Earth Engine',
+  fileNamePrefix: 'Luas_LULC_Hektar',
+  fileFormat: 'CSV',
+  selectors: ['ID_Kelas', 'Nama_Kelas', 'Luas_ha']
+});
+```
+
+**Memahami kode perhitungan luas:**
+
+- `ee.Image.pixelArea()` menghasilkan raster yang berisi luas setiap piksel dalam satuan meter persegi.
+- `.divide(10000)` mengonversi luas piksel dari meter persegi menjadi hektar.
+- `.addBands(lulc)` menggabungkan raster luas piksel dengan raster hasil klasifikasi.
+- `ee.Reducer.sum().group()` menjumlahkan luas piksel berdasarkan nilai kelas penutup lahan.
+- `groupField: 1` menunjukkan bahwa pengelompokan dilakukan berdasarkan band kedua, yaitu band hasil klasifikasi.
+- `groupName: 'DN'` memberikan nama properti untuk menyimpan ID kelas.
+- `reduceRegion()` melakukan perhitungan pada wilayah studi yang ditentukan melalui parameter `geometry`.
+
+Hasil perhitungan kemudian disusun menjadi tabel yang memuat ID kelas, nama kelas, dan luas masing-masing kelas dalam hektar.
+
+**Catatan:** Pastikan variabel `lulc`, `geometry`, dan `nama_kelas` telah didefinisikan pada bagian sebelumnya. Perhitungan ini menggunakan resolusi spasial 20 meter dan wilayah analisis sesuai dengan `geometry`. Nilai luas yang dihasilkan merupakan estimasi luas berdasarkan piksel raster hasil klasifikasi.
 
 ---
+
+
 
 ## Referensi dokumentasi
 
