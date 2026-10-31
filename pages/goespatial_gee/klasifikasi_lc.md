@@ -1750,6 +1750,7 @@ Jika PA dan UA dinyatakan dalam persen, F1-score yang dihasilkan juga berada dal
 
 Berikutnya, hasil evaluasi disusun menjadi tabel yang memuat metrik untuk setiap kelas, kemudian diekspor sebagai file CSV agar dapat dianalisis lebih lanjut.
 
+
 ```javascript
 // Mengambil metrik akurasi
 var oa = confMatrix.accuracy();
@@ -1788,7 +1789,10 @@ var barisKelas = order.map(function(id) {
     'F1_Score_Persen': f1Val
   });
 });
+```
 
+
+```javascript
 // Menambahkan baris Overall Accuracy dan Kappa
 var barisTotal = ee.List([
   ee.Feature(null, {
@@ -1811,7 +1815,9 @@ var barisTotal = ee.List([
 var tabelAkurasi = ee.FeatureCollection(
   barisKelas.cat(barisTotal)
 );
+```
 
+```javascript
 // Mengekspor hasil evaluasi ke Google Drive
 Export.table.toDrive({
   collection: tabelAkurasi,
