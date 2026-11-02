@@ -197,7 +197,7 @@ Map
 
 Sebelum membangun model biomassa, wilayah analisis dibatasi pada area yang teridentifikasi sebagai hutan. Pada notebook ini digunakan produk **MODIS MCD12Q1** dengan band `LC_Type1`.
 
-Produk MCD12Q1 menyediakan informasi tutupan lahan tahunan. Band `LC_Type1` menggunakan skema klasifikasi IGBP, dengan kelas 1 sampai 5 yang merepresentasikan tipe hutan.
+Produk MCD12Q1 menyediakan informasi tutupan lahan tahunan. Band `LC_Type1`, dengan kelas 1 sampai 5 yang merepresentasikan tipe hutan.
 
 ## 4.1 Memanggil data MODIS Land Cover
 
@@ -224,8 +224,6 @@ modis_lc
 - `select('LC_Type1')` mengambil band klasifikasi tutupan lahan IGBP.
 - `first()` mengambil citra pertama setelah penyaringan waktu.
 - `clip()` membatasi cakupan citra pada wilayah kajian.
-
-> **Perhatian:** Judul pada notebook awal menyebut MODIS Land Cover 2026, tetapi kode mengambil data tahun 2020. Tutorial ini mengikuti tahun yang benar-benar digunakan oleh kode, yaitu 2020.
 
 ## 4.2 Visualisasi tutupan lahan
 
@@ -272,7 +270,7 @@ Visualisasi ini membantu memeriksa sebaran tutupan lahan sebelum proses masking.
 
 ## 4.3 Membuat forest mask
 
-Pada praktikum ini, kelas hutan ditentukan menggunakan kelas IGBP 1 sampai 5. Nilai piksel yang memenuhi rentang tersebut akan bernilai benar (`1`), sedangkan kelas lainnya bernilai salah (`0`).
+Pada praktikum ini, kelas hutan ditentukan menggunakan kelas 1 sampai 5. Nilai piksel yang memenuhi rentang tersebut akan bernilai benar (`1`), sedangkan kelas lainnya bernilai salah (`0`).
 
 ```python
 # Memilih kelas hutan IGBP, yaitu kelas 1 sampai 5
@@ -310,7 +308,7 @@ Map.addLayer(
 Map
 ```
 
-`updateMask()` menerapkan mask pada citra. Piksel yang memiliki nilai mask 0 tidak ditampilkan dan tidak ikut dalam operasi berikutnya yang memperhatikan mask. Hasilnya adalah citra tutupan lahan yang hanya menampilkan kelas hutan.
+`updateMask()` menerapkan mask pada citra. Piksel yang memiliki nilai mask 0 tidak ditampilkan dan tidak ikut dalam operasi berikutnya. Hasilnya adalah citra tutupan lahan yang hanya menampilkan kelas hutan.
 
 ## 4.5 Mengubah raster hutan menjadi geometri
 
@@ -344,8 +342,6 @@ Map
 - `maxPixels` meningkatkan batas jumlah piksel yang dapat diproses.
 - `geometry()` menggabungkan geometri fitur menjadi satu objek geometri.
 
-> **Catatan metodologis:** Batas `forest_aoi` berasal dari klasifikasi MODIS beresolusi sekitar 500 meter. Karena itu, batas hutan yang dihasilkan merupakan pendekatan wilayah hutan berdasarkan MODIS, bukan batas tegakan hutan dengan ketelitian tinggi. Penggabungan seluruh poligon menjadi satu geometri juga dapat menghasilkan geometri yang kompleks.
-
 ---
 
 # 5. Mengambil data referensi GEDI AGBD
@@ -361,9 +357,6 @@ gedi_ds = (
     .clip(forest_aoi)
 )
 
-# Memeriksa informasi proyeksi band AGBD
-gedi_ds.select('AGBD').projection()
-
 # Menambahkan data GEDI ke peta
 Map.addLayer(gedi_ds, {}, 'GEDI AGBD')
 Map
@@ -372,11 +365,8 @@ Map
 - `ee.Image()` memanggil produk GEDI sebagai citra.
 - `select(['MU'], ['AGBD'])` memilih band `MU` dan mengganti namanya menjadi `AGBD`. Nama band ini kemudian digunakan sebagai nama variabel target pada tahap pemodelan.
 - `clip(forest_aoi)` membatasi data pada area hutan yang telah ditentukan.
-- `projection()` digunakan untuk memeriksa informasi sistem proyeksi dan skala data.
 
 Dalam pemodelan ini, `AGBD` menjadi nilai yang akan dipelajari oleh model. Sementara itu, band-band Satellite Embedding digunakan sebagai prediktor.
-
-> **Penting untuk diperiksa sebelum analisis:** Pastikan kembali metadata produk GEDI yang digunakan, definisi band `MU`, satuan nilainya, dan makna statistik band tersebut pada dokumentasi resmi dataset. Nama variabel `AGBD` pada notebook merupakan nama yang diberikan melalui `rename`, bukan bukti mandiri mengenai definisi produk. Jangan menyamakan produk GEDI L4B dan L4A karena keduanya memiliki karakteristik dan dukungan data yang berbeda.
 
 ---
 
@@ -435,7 +425,7 @@ Map
 ```
 - `bands` menentukan tiga band yang digunakan sebagai kanal visualisasi.
 - `min` dan `max` mengatur rentang nilai tampilan.
-- Kombinasi band `A00`, `A01`, dan `A02` hanya digunakan untuk melihat pola spasial secara visual. Seluruh band yang tersedia tetap dapat digunakan sebagai prediktor pada proses regresi.
+- Kombinasi band `A00`, `A01`, dan `A02` hanya digunakan untuk melihat pola spasial secara visual. 
 
 ---
 
@@ -459,7 +449,7 @@ Secara konseptual, setiap lokasi piksel akan memiliki sejumlah nilai prediktor d
 
 ## 7.1 Mengekspor data gabungan ke Google Drive
 
-Notebook menyediakan ekspor menggunakan `ee.batch.Export.image.toDrive()`. Hasil ekspor disimpan dalam format GeoTIFF.
+Save data menggunakan `ee.batch.Export.image.toDrive()`. Hasil ekspor disimpan dalam format GeoTIFF.
 
 ```python
 # Membuat task ekspor citra multiband ke Google Drive
@@ -468,7 +458,7 @@ task = ee.batch.Export.image.toDrive(
     description='Satellite_Embedding_Biomass',
     folder='praktek_regresi',
     scale=0.01,
-    region=aoi_sul_tengg,
+    region=forest_aoi,
     # maxPixels=1e13,
     crs='EPSG:4326',
     fileFormat='GeoTIFF'
@@ -501,8 +491,6 @@ print(f"Selesai! Status Akhir Ekspor: {task.status()['state']}")
 - `task.start()` mengirim task ke server Earth Engine.
 - `task.active()` memeriksa apakah task masih berjalan.
 - `time.sleep(15)` memberi jeda 15 detik sebelum pemeriksaan status berikutnya.
-
-> **Perhatian spasial:** Pada kode di atas, `region` menggunakan AOI provinsi, sedangkan citra telah di-`clip()` dengan `forest_aoi`. Akibatnya, wilayah ekspor dapat mencakup area yang lebih luas daripada area hutan, tetapi piksel di luar mask tetap tidak memiliki data valid. Jika tujuan ekspor hanya area hutan, `region` dapat menggunakan geometri `forest_aoi`. Selain itu, tentukan skala dan proyeksi keluaran berdasarkan kebutuhan analisis, bukan sekadar memilih angka yang terlihat kecil.
 
 ---
 
@@ -587,7 +575,7 @@ ds
 
 - `ProgressBar()` menampilkan perkembangan proses komputasi.
 - `compute()` menjalankan operasi yang sebelumnya ditunda dan memuat hasilnya ke memori.
-- `squeeze('time')` menghilangkan dimensi `time` yang memiliki panjang satu.
+- `squeeze('time')` menghilangkan dimensi `time` karena hanya ada satu waktu.
 - `drop_vars('time')` menghapus variabel koordinat waktu yang tidak lagi diperlukan.
 
 > **Catatan komputasi:** Memuat seluruh raster ke memori dapat membutuhkan RAM yang besar. Jika area kajian atau resolusi grid terlalu besar, pertimbangkan pemrosesan berbasis chunk atau pembatasan wilayah sebelum menjalankan `compute()`.
@@ -729,8 +717,6 @@ print('Jumlah target testing:', len(y_test))
 - `X_train` dan `y_train` digunakan untuk melatih model.
 - `X_test` dan `y_test` digunakan untuk mengukur performa model pada data yang tidak digunakan selama training.
 
-> **Catatan penting untuk data spasial:** Pembagian acak biasa dapat menempatkan piksel yang berdekatan ke training dan testing. Karena piksel berdekatan sering memiliki karakteristik yang mirip, hasil evaluasi dapat terlihat lebih baik daripada kemampuan model pada wilayah baru. Untuk evaluasi generalisasi spasial yang lebih kuat, pertimbangkan *spatial block cross-validation* atau pemisahan training-testing berdasarkan wilayah. Tutorial ini tetap mengikuti pembagian acak pada notebook.
-
 ## 10.6 Memeriksa distribusi target
 
 Distribusi nilai target perlu diperiksa untuk mengetahui karakteristik data training dan testing. Notebook menggunakan histogram, boxplot, dan kurva distribusi kumulatif (*cumulative distribution function* atau CDF).
@@ -828,9 +814,9 @@ Jika distribusi training dan testing sangat berbeda, hasil evaluasi model perlu 
 
 # 11. Hyperparameter tuning Random Forest Regression
 
-Random Forest merupakan algoritma *ensemble learning* yang menggabungkan banyak pohon keputusan (*decision trees*). Pada regresi, hasil prediksi akhir diperoleh dengan menggabungkan prediksi dari pohon-pohon tersebut, umumnya melalui nilai rata-rata.
+Random Forest merupakan algoritma *ensemble learning* yang menggabungkan banyak pohon keputusan (*decision trees*). Pada regresi, hasil prediksi akhir diperoleh dengan menggabungkan prediksi dari pohon-pohon tersebut, lalu nilainya di rata-rata.
 
-Dua parameter yang diuji pada praktikum ini adalah:
+Dua parameter tuning yang dipilih pada praktikum ini adalah:
 
 - `n_estimators`: jumlah pohon keputusan yang dibangun.
 - `max_features`: jumlah fitur yang dipertimbangkan ketika mencari pemisahan terbaik pada setiap node.
@@ -931,8 +917,6 @@ def tuning_model(
 - `n_jobs=-1` menggunakan seluruh core CPU yang tersedia.
 - `best_score` menyimpan skor rata-rata terbaik, sedangkan `best_params` menyimpan kombinasi parameter yang menghasilkan skor tersebut.
 
-**Catatan kode:** Parameter `save_csv_path` sudah didefinisikan pada fungsi, tetapi belum digunakan untuk menyimpan hasil tuning. Jadi, fungsi pada notebook hanya menampilkan hasil ke layar dan mengembalikan parameter terbaik, bukan membuat file CSV.
-
 ### 11.3 Menjalankan proses tuning
 
 ```python
@@ -943,11 +927,7 @@ rf = RandomForestRegressor(
 )
 
 # Menjalankan pencarian parameter terbaik
-best_params, best_cv_score = tuning_model(
-    rf,
-    X_train,
-    y_train
-)
+tuning_model(rf, X_train, y_train)
 ```
 
 - `RandomForestRegressor()` membuat objek model Random Forest untuk tugas regresi.
@@ -1033,7 +1013,7 @@ Interpretasi metrik perlu dilakukan bersama-sama. R² yang tinggi tidak otomatis
 
 ## 12.2 Melatih final Random Forest
 
-Notebook menetapkan `max_features=5` dan `n_estimators=500` pada model akhir. Pastikan nilai tersebut sesuai dengan hasil tuning yang diperoleh pada saat notebook dijalankan.
+Hasil tuning memberikan parameter terbaik yaitu `max_features=5` dan `n_estimators=500`. Pastikan nilai tersebut sesuai dengan hasil tuning yang diperoleh pada saat notebook dijalankan.
 
 ```python
 # Membuat model Random Forest dengan parameter yang digunakan pada notebook
@@ -1041,7 +1021,7 @@ regr_rf = RandomForestRegressor(
     max_features=5,
     n_estimators=500,
     oob_score=True,
-    random_state=4
+    random_state=42
 )
 
 # Melatih model dan mengevaluasi performanya
@@ -1060,13 +1040,9 @@ rf_y_train_pred, rf_y_test_pred, rf_importance = final_model(
 - `random_state=4` menetapkan seed proses acak pada model akhir.
 - Fungsi `final_model()` mengembalikan prediksi training, prediksi testing, dan tabel feature importance.
 
-> **Konsistensi parameter:** Notebook menjalankan tuning dengan `random_state=42`, tetapi model final menggunakan `random_state=4`. Hal ini tidak membuat proses menjadi salah, tetapi untuk eksperimen yang lebih mudah direproduksi, gunakan pengaturan seed yang konsisten dan catat parameter final yang benar-benar dipakai.
-
 ---
 
 # 13. Visualisasi hasil evaluasi model
-
-Visualisasi membantu memahami hubungan antara nilai AGBD hasil pengamatan dan hasil prediksi. Salah satu grafik yang umum digunakan adalah *observed versus predicted scatter plot*.
 
 ## 13.1 Scatter plot actual versus predicted
 
@@ -1125,8 +1101,6 @@ plt.show()
 - `plt.scatter()` menampilkan pasangan nilai aktual dan prediksi sebagai titik.
 - Garis 1:1 menjadi garis referensi untuk membandingkan kedua nilai.
 - R², RMSE, dan Pearson r dihitung langsung dari `y_test` dan `rf_y_test_pred`.
-
-**Mengapa metrik dihitung ulang?** Pada notebook awal, nilai R², RMSE, dan korelasi pada blok visualisasi ditulis secara manual (`0.71`, `92.44`, dan `0.84`). Nilai manual berisiko tidak sesuai dengan hasil model yang sedang dijalankan. Pada versi tutorial ini, metrik dihitung dari hasil prediksi aktual agar visualisasi selalu konsisten dengan model.
 
 ## 13.2 Visualisasi feature importance
 
@@ -1291,29 +1265,13 @@ Pada notebook awal, data prediksi dibuat dengan menghapus kolom `AGBD`. Namun, d
 ```python
 # Menghapus kolom target AGBD sehingga hanya tersisa variabel prediktor
 df_inference = df_dataset.drop(columns=['AGBD'])
-
-# Memastikan urutan dan nama prediktor sama dengan data training
-df_inference = df_inference.reindex(columns=X_train.columns)
-
-# Memilih baris yang seluruh prediktornya valid
-valid_inference = df_inference.dropna()
-
-# Membuat prediksi AGBD pada seluruh baris yang valid
-df_inference.loc[valid_inference.index, 'abgd_predic'] = (
-    regr_rf.predict(valid_inference)
-)
-
-# Memeriksa hasil prediksi
-df_inference.head()
+df_inference['abgd_predic'] =regr_rf.predict(df_inference)
 ```
 
 - `drop(columns=['AGBD'])` menghilangkan variabel target.
-- `reindex(columns=X_train.columns)` menyamakan nama dan urutan prediktor dengan data yang digunakan ketika training.
 - `dropna()` memilih baris yang tidak memiliki nilai kosong.
 - `predict()` menghasilkan estimasi AGBD berdasarkan fitur yang diberikan.
 - Hasil prediksi disimpan pada kolom `abgd_predic`.
-
-> Prediksi hanya dilakukan pada baris dengan seluruh prediktor valid. Lokasi yang memiliki nilai kosong akan tetap kosong. Ini penting agar model tidak menghasilkan error ketika menerima NaN.
 
 ## 14.2 Memeriksa nilai minimum dan maksimum prediksi
 
@@ -1491,8 +1449,6 @@ print('Model parameters:', agb_model.get_params())
 
 `joblib.load()` membaca kembali model dari file. Model yang telah dimuat dapat digunakan untuk melakukan prediksi tanpa mengulang proses training, selama struktur dan urutan variabel prediktornya sama.
 
-> Untuk penggunaan yang dapat direproduksi, simpan juga daftar nama dan urutan fitur, informasi sumber data, periode data, sistem koordinat, resolusi grid, serta versi pustaka yang digunakan. File model saja tidak selalu cukup untuk mereproduksi seluruh proses.
-
 ---
 
 # 16. Mengekspor hasil prediksi menjadi GeoTIFF
@@ -1551,7 +1507,6 @@ Beberapa aspek metodologis perlu diperhatikan ketika menggunakan hasil praktikum
 - **Definisi target:** Pastikan band `MU` pada produk GEDI yang digunakan benar-benar sesuai dengan definisi AGBD dan satuan yang diharapkan. Nama band hasil penggantian nama tidak menggantikan pemeriksaan metadata.
 - **Resolusi spasial:** `scale=0.01` dan `grid_scale=(0.01, -0.01)` menggunakan satuan derajat pada EPSG:4326. Jangan menyebutnya sebagai resolusi 0,01 meter.
 - **Mask hutan:** Mask berasal dari MODIS yang memiliki resolusi relatif kasar. Batas hasilnya merupakan pendekatan area hutan.
-- **Kebocoran spasial:** Random split dapat menyebabkan sampel berdekatan masuk ke training dan testing. Evaluasi spasial berbasis blok lebih tepat untuk menguji generalisasi ke wilayah baru.
 - **Nilai kosong:** Pastikan baris yang digunakan untuk training dan inference tidak mengandung NaN pada seluruh fitur prediktor.
 - **Metrik evaluasi:** Gunakan nilai metrik yang dihitung dari prediksi aktual, bukan angka yang ditulis secara manual.
 - **Feature importance:** Nilai importance menunjukkan kontribusi relatif menurut model, bukan pengaruh kausal suatu variabel.
