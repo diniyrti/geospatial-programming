@@ -66,9 +66,9 @@ project:
         - file: pages/part02/first-example.md
     - file: blog.md
       children:
-        - file: tags/myst-markdown.md
-        - file: tags/tutorial.md
-        - file: tags/github-pages.md
+        #- file: tags/myst-markdown.md
+        #- file: tags/tutorial.md
+        #- file: tags/github-pages.md
     - pattern: posts/*.md
       hidden: true
 site:
