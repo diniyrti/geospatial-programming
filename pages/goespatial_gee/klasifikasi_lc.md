@@ -1057,7 +1057,6 @@ Pada tahap sebelumnya, kita telah membentuk beberapa kelompok prediktor yang ber
 // Gabungkan indeks spektral, fitur topografi, dan tekstur
 var final_predictor = spectral_index
   .addBands(topo)
-  .addBands(glcm_filter)
   .toFloat();
 
 // Periksa daftar band prediktor

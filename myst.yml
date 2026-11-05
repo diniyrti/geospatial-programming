@@ -57,13 +57,13 @@ project:
         - file: pages/goespatial_gee/klasifikasi_lc.md
     - title: Shallow Learning for Geospatial
       children:
-        - file: pages/part02/first-example.md
+        #- file: pages/part02/first-example.md
     - title: Deep Learning for Geospatial
       children:
-        - file: pages/part02/first-example.md
+        #- file: pages/part02/first-example.md
     - title: Remote Sensing Applications
       children:
-        - file: pages/part02/first-example.md
+        #- file: pages/part02/first-example.md
     - file: blog.md
       children:
         #- file: tags/myst-markdown.md
