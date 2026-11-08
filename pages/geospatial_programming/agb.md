@@ -207,7 +207,7 @@ modis_lc = (
     ee.ImageCollection('MODIS/061/MCD12Q1')
     # Memilih periode tahun 2020
     .filterDate('2020-01-01', '2021-01-01')
-    # Mengambil band klasifikasi IGBP
+    # Mengambil band klasifikasi
     .select('LC_Type1')
     # Mengambil citra pada periode yang dipilih
     .first()
@@ -221,7 +221,7 @@ modis_lc
 
 - `ImageCollection()` memanggil koleksi citra MODIS.
 - `filterDate()` memilih citra berdasarkan rentang waktu. Rentang akhir bersifat eksklusif, sehingga tanggal `2021-01-01` digunakan untuk mengambil periode tahun 2020.
-- `select('LC_Type1')` mengambil band klasifikasi tutupan lahan IGBP.
+- `select('LC_Type1')` mengambil band klasifikasi tutupan lahan.
 - `first()` mengambil citra pertama setelah penyaringan waktu.
 - `clip()` membatasi cakupan citra pada wilayah kajian.
 
