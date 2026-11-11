@@ -206,7 +206,7 @@ Map.addLayer(forest_only, {'palette': '006400'}, 'Forest Only');
 | Kode atau komponen | Penjelasan |
 |---|---|
 | `modis_lc` | Citra klasifikasi yang akan diberi mask. |
-| `.updateMask(forest_mask)` | Memperbarui mask citra berdasarkan nilai forest mask. Piksel yang tidak memenuhi mask disembunyikan. |
+| `.updateMask(forest_mask)` | Memperbarui mask citra berdasarkan nilai forest mask. |
 | `forest_only` | Citra MODIS yang hanya mempertahankan piksel kelas hutan. |
 | `Map.addLayer()` | Menampilkan hasil masking pada peta. |
 | `palette: '006400'` | Menggunakan warna hijau tua untuk visualisasi piksel yang tersisa. |
@@ -658,7 +658,7 @@ print('Pearson r:', correlation.get('correlation'));
 Rumus:
 
 $$
-R^2 = 1 - \\frac{SSE}{SST}
+R^2 = 1 - \frac{SS_{res}}{SS_{tot}}
 $$
 
 `SSE.divide(SST)` menghitung rasio SSE terhadap SST. `ee.Number(1).subtract(...)` menghitung satu dikurangi rasio tersebut.
@@ -670,7 +670,7 @@ R² mendekati 1 menunjukkan bahwa model menjelaskan variasi data dengan baik. R�
 Rumus:
 
 $$
-RMSE = \\sqrt{\\frac{SSE}{n}}
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}
 $$
 
 `evaluation.size()` menghitung jumlah sampel evaluasi. `SSE.divide(evaluation.size())` menghitung rata-rata kuadrat kesalahan, sedangkan `.sqrt()` menghitung akar kuadratnya. RMSE memiliki satuan yang sama dengan variabel target.
@@ -688,7 +688,7 @@ $$
 Korelasi Pearson memiliki rentang -1 hingga 1. Nilai positif menunjukkan hubungan linear searah, nilai negatif menunjukkan hubungan berlawanan arah, dan nilai mendekati nol menunjukkan hubungan linear yang lemah.
 
 ### 11.8 Menampilkan hasil evaluasi
-
+http://localhost:3000/pages/goespatial-gee/aplikasi-geospasial-interaktif#id-12-menghitung-feature-importance
 | Kode | Penjelasan |
 |---|---|
 | `print('Number of Trees:', nTrees)` | Menampilkan jumlah pohon keputusan. |
@@ -696,8 +696,6 @@ Korelasi Pearson memiliki rentang -1 hingga 1. Nilai positif menunjukkan hubunga
 | `print('Testing R²:', R2)` | Menampilkan R² data testing. |
 | `print('Testing RMSE:', RMSE)` | Menampilkan RMSE data testing. |
 | `print('Pearson r:', ...)` | Menampilkan koefisien korelasi Pearson. |
-
-**Catatan metodologis:** R² pada kode dihitung menggunakan rata-rata observasi dari data testing. Pembagian acak per piksel juga dapat menyebabkan ketergantungan spasial antara training dan testing. Untuk menguji generalisasi ke lokasi lain, pertimbangkan validasi spasial.
 
 ---
 
