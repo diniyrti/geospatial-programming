@@ -56,20 +56,6 @@ project:
       children:
         - file: pages/goespatial_gee/klasifikasi_lc.md
         - file: pages/goespatial_gee/aplikasi_geospasial_interaktif.md
-    - title: Shallow Learning for Geospatial
-      children:
-        #- file: pages/part02/first-example.md
-    - title: Deep Learning for Geospatial
-      children:
-        #- file: pages/part02/first-example.md
-    - title: Remote Sensing Applications
-      children:
-        #- file: pages/part02/first-example.md
-    - file: blog.md
-      children:
-        #- file: tags/myst-markdown.md
-        #- file: tags/tutorial.md
-        #- file: tags/github-pages.md
     - pattern: posts/*.md
       hidden: true
 site:
