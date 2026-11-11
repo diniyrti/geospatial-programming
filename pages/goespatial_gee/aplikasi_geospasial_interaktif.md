@@ -79,9 +79,8 @@ Map.centerObject(aoi_sul_tengg, 7);
 | `aoi_gaul.filter()` | Menyaring fitur berdasarkan kondisi tertentu. |
 | `ee.Filter.eq()` | Membuat kondisi filter sama dengan (*equal*). |
 | `'ADM0_NAME'` | Properti yang menyimpan nama negara. |
-| `'Indonesia'` | Nilai negara yang dipilih. |
-| `indonesia` | FeatureCollection hasil filter wilayah Indonesia. |
-| `aggregate_array('ADM1_NAME')` | Mengumpulkan nilai nama provinsi dari seluruh fitur menjadi array. |
+| `'Indonesia'` | Nama negara yang dipilih. |
+| `aggregate_array('ADM1_NAME')` | Mengumpulkan nilai nama provinsi di Indonesia dari seluruh fitur menjadi array. |
 
 Blok ini menampilkan daftar provinsi agar nama wilayah yang digunakan pada proses filter berikutnya dapat diperiksa.
 
