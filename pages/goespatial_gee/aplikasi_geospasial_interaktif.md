@@ -830,7 +830,7 @@ Nama key pada dictionary mengikuti nama band dan keluaran reducer Earth Engine. 
 
 # 15. Menampilkan Grafik pada Console
 
-Blok ini membuat diagram Scatter untuk membandingkan AGBD observasi dengan AGBD hasil prediksi pada data testing. Grafik ditampilkan pada Console Code Editor.
+Blok ini membuat ScatterChart untuk membandingkan AGBD observasi dengan AGBD hasil prediksi pada data testing. Grafik ditampilkan pada Console Code Editor.
 
 ```javascript
 print(ui.Chart.feature.byFeature({
@@ -993,7 +993,7 @@ leftPanel.add(ui.Panel([
 ### 16.2.5 Membuat legenda GEDI
 
 ```javascript
-leftPanel.add(ui.Label('GEDI AGBD (Mg/ha',
+leftPanel.add(ui.Label('GEDI AGBD (Mg/ha)',
               {fontWeight: 'bold', fontSize: '12px', margin: '0 0 4px 0'}));
 leftPanel.add(ui.Thumbnail({
   image: ee.Image.pixelLonLat().select('longitude').unitScale(-180, 180)
@@ -1010,7 +1010,7 @@ leftPanel.add(ui.Panel([
 ], ui.Panel.Layout.flow('horizontal'), {stretch: 'horizontal'}));
 ```
 
-Struktur kode ini sama dengan legenda AGBD sebelumnya, tetapi menggunakan palet GEDI yang berbeda. `ui.Thumbnail()` membuat gradasi warna, sedangkan panel horizontal menampilkan penanda angka. Pada kode sumber, judul `GEDI AGBD (Mg/ha` belum memiliki tanda kurung penutup. Secara tampilan, teks tersebut sebaiknya ditulis `GEDI AGBD (Mg/ha)`.
+Struktur kode ini sama dengan legenda AGBD sebelumnya, tetapi menggunakan palet GEDI yang berbeda. `ui.Thumbnail()` membuat gradasi warna, sedangkan panel horizontal menampilkan penanda angka.
 
 **Catatan:** Sama seperti legenda AGBD, thumbnail ini dibentuk dari longitude yang dinormalisasi. Palet dan angka legenda perlu diperiksa agar konsisten dengan parameter visualisasi layer GEDI pada peta.
 
@@ -1051,6 +1051,94 @@ Kedua slider mempunyai fungsi yang sama, tetapi terhubung ke objek layer yang be
 
 *Pixel Inspector* menampilkan nilai raster pada lokasi yang dipilih pengguna melalui klik peta. Fitur ini menggabungkan interaksi peta, pengambilan sampel citra, dan pembaruan komponen UI.
 
+Full Code 
+
+```javascript
+//Membuat panel informasi
+leftPanel.add(ui.Label('Pixel Inspector',
+              {fontWeight: 'bold', fontSize: '13px', margin: '0 0 4px 0'}));
+
+var inspectorContent = ui.Panel({
+  layout: ui.Panel.Layout.flow('vertical'), style: {margin: '0'}
+});
+inspectorContent.add(ui.Label('Click anywhere on the map to inspect.',
+              {fontSize: '11px', color: '#888'}));
+leftPanel.add(inspectorContent);
+
+// Mengaktifkan klik pada peta
+Map.style().set('cursor', 'crosshair');
+Map.onClick(function(coords) {
+  inspectorContent.clear();
+  inspectorContent.add(ui.Label(
+    'Lon: ' + coords.lon.toFixed(5) + '  Lat: ' + coords.lat.toFixed(5),
+    {fontSize: '10px', color: '#555', margin: '0 0 4px 0'}
+  ));
+  inspectorContent.add(ui.Label('Sampling...', {fontSize: '11px', color: '#888'}));
+
+  // Membuat titik dan menggabungkan citra
+  var point     = ee.Geometry.Point([coords.lon, coords.lat]);
+  var sampleImg = embedding_1km
+                    .addBands(biomassPrediction)
+                    .addBands(gedi_ds);
+
+  // Mengambil nilai piksel dengan reduceRegion
+  sampleImg.reduceRegion({
+    reducer: ee.Reducer.first(), geometry: point, crs: gedi_ds.projection(), scale: gedi_ds.projection().nominalScale()
+  }).evaluate(function(vals) {
+    // Memperbarui panel dan memeriksa ketersediaan data
+    inspectorContent.clear();
+    inspectorContent.add(ui.Label(
+      'Lon: ' + coords.lon.toFixed(5) + '  Lat: ' + coords.lat.toFixed(5),
+      {fontSize: '10px', color: '#555', margin: '0 0 4px 0'}
+    ));
+    if (!vals || vals['AGBD_Prediction'] === null || vals['AGBD_Prediction'] === undefined) {
+      inspectorContent.add(ui.Label('No AGBD data at this location.',
+                    {fontSize: '11px', color: '#c00'}));
+      return;
+    }
+    // Menampilkan AGBD hasil estimasi
+    inspectorContent.add(ui.Label(
+      'AGBD Estimation: ' + (vals['AGBD_Prediction'] !== null ? vals['AGBD_Prediction'].toFixed(2) : 'n/a') + ' Mg/ha',
+      {fontSize: '12px', fontWeight: 'bold', color: '#980043', margin: '0 0 2px 0'}
+    ));
+
+    // Menampilkan nilai GEDI AGBD
+    inspectorContent.add(ui.Label(
+      'GEDI AGBD: ' +
+      (vals['AGBD'] !== null && vals['AGBD'] !== undefined
+        ? vals['AGBD'].toFixed(2) + ' Mg/ha'
+        : 'No Data'),
+      {fontSize: '12px', fontWeight: 'bold', color: '#31a354', margin: '0 0 2px 0'}
+    ));
+    
+    // Menampilkan nilai seluruh band Satellite Embedding
+    var bands = embedding_1km.bandNames();
+
+    bands.evaluate(function(bandNames) {
+
+      bandNames.forEach(function(b) {
+
+        var v = vals[b];
+
+        var display = (v === null || v === undefined) ? 'n/a' :
+                      (Math.abs(v) < 0.001 && v !== 0 ?
+                      v.toExponential(2) : v.toFixed(4));
+
+        inspectorContent.add(ui.Label(
+          b + ': ' + display,
+          {fontSize: '10px', margin: '1px 0'}
+        ));
+
+      });
+
+    });
+
+  });
+});
+
+```
+
+#### Penelasan Code pada setiap parth nya
 #### Membuat panel informasi
 
 ```javascript
