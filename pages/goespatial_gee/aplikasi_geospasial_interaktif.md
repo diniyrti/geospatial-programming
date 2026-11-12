@@ -688,7 +688,7 @@ $$
 Korelasi Pearson memiliki rentang -1 hingga 1. Nilai positif menunjukkan hubungan linear searah, nilai negatif menunjukkan hubungan berlawanan arah, dan nilai mendekati nol menunjukkan hubungan linear yang lemah.
 
 ### 11.8 Menampilkan hasil evaluasi
-http://localhost:3000/pages/goespatial-gee/aplikasi-geospasial-interaktif#id-12-menghitung-feature-importance
+
 | Kode | Penjelasan |
 |---|---|
 | `print('Number of Trees:', nTrees)` | Menampilkan jumlah pohon keputusan. |
@@ -1368,8 +1368,6 @@ agbd_stats.evaluate(function(s) {
 ```
 
 `agbd_stats` merupakan objek statistik yang dibuat pada bagian sebelumnya. `.evaluate()` mengambil hasil dari server ke sisi klien dan menyimpannya pada parameter `s`. `if (!s) return` menghentikan callback jika hasil tidak tersedia. Properti `AGBD_Prediction_mean`, `median`, `stdDev`, `min`, dan `max` mengambil statistik masing-masing. `.toFixed(2)` membatasi tampilan menjadi dua angka desimal, sedangkan `.setValue()` memperbarui label yang sebelumnya menampilkan `computing...`.
-
-**Catatan:** Kode ini belum memeriksa apakah setiap properti statistik bernilai `null`. Jika statistik dapat kosong, lakukan pemeriksaan nilai sebelum menggunakan `.toFixed(2)` agar tidak terjadi error.
 
 ### 16.3.4 Menampilkan metrik evaluasi model
 
