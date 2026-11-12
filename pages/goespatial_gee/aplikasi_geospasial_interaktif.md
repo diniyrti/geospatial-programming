@@ -1359,8 +1359,8 @@ rightPanel.add(cMax);
 ```javascript
 agbd_stats.evaluate(function(s) {
   if (!s) return;
-  cMean.setValue('Mean      : ' + s['AGBD_Prediction_mean'].toFixed(2) + ' Mg/ha');
-  cMedian.setValue('Median    : ' + s['AGBD_Prediction_median'].toFixed(2) + ' Mg/ha');
+  cMean.setValue('Mean     : ' + s['AGBD_Prediction_mean'].toFixed(2) + ' Mg/ha');
+  cMedian.setValue('Median : ' + s['AGBD_Prediction_median'].toFixed(2) + ' Mg/ha');
   cStd.setValue('Std Dev   : ' + s['AGBD_Prediction_stdDev'].toFixed(2) + ' Mg/ha');
   cMin.setValue('Min       : ' + s['AGBD_Prediction_min'].toFixed(2) + ' Mg/ha');
   cMax.setValue('Max       : ' + s['AGBD_Prediction_max'].toFixed(2) + ' Mg/ha');
