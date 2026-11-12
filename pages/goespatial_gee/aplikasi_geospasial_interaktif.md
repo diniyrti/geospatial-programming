@@ -1550,7 +1550,7 @@ rightPanel.add(scatterChart);
 | `features: testPrediction` | Menggunakan data testing yang berisi nilai observasi dan prediksi. |
 | `xProperty: 'AGBD'` | Menempatkan nilai observasi pada sumbu X. |
 | `yProperties: ['predicted']` | Menempatkan nilai prediksi pada sumbu Y. |
-| `.setChartType('ScatterChart')` | Memilih diagram pencar. |
+| `.setChartType('ScatterChart')` | Memilih diagram ScatterChart. |
 | `.setOptions()` | Mengatur judul, sumbu, simbol, warna, garis tren, dan ukuran grafik. |
 | `hAxis` dan `vAxis` | Mengatur judul dan tampilan teks sumbu. |
 | `legend: {position: 'none'}` | Menyembunyikan legenda. |
