@@ -1945,6 +1945,111 @@ print('Model Random Forest:', model_RF);
 ```
 ---
 
+## Deskripsi Tugas
+### Ketentuan Umum Tugas Klasifikasi Penutup Lahan Menggunakan Random Forest di GEE
+
+- Tugas dikerjakan **individu**.
+- Setiap tugas dikumpulkan dalam **repository GitHub masing-masing**.
+- Seluruh repository wajib berstatus **Public**. Repository private atau yang tidak bisa dibuka dinilai **tidak dikumpulkan**.
+- Pemeriksaan: buka link repository di **jendela incognito/private** browser. Jika bisa dibuka tanpa login, berarti sudah publik.
+- Penamaan repository: `Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM`.
+- Link repository tugas dikirim lewat Pengumpulan Tugas di Sikolah di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
+
+### A. Tujuan
+
+Mahasiswa mampu menerapkan klasifikasi penutup lahan terbimbing dengan algoritma Random Forest di Google Earth Engine pada lokasi kajian yang berbeda dari praktikum, serta menjelaskan pilihan data dan hasilnya secara ilmiah.
+
+### B. Ketentuan Pengerjaan
+
+1. Pilih **lokasi kajian yang berbeda dari praktikum**. 
+2. Klasifikasi minimal **4 kelas**: vegetasi, badan air, lahan terbuka, dan lahan terbangun. Kelas tambahan boleh.
+3. Prediktor **bebas**: citra satelit apa pun, indeks spektral (NDVI, NDWI, NDBI, dll.), dan/atau data topografi (DEM, kemiringan, dll.). **Setiap prediktor wajib dijelaskan alasan pemilihannya.**
+4. Seluruh proses klasifikasi dikerjakan di **Google Earth Engine**.
+5. Sampel latih dan sampel uji harus **terpisah**, dan jumlah sampel tiap kelas dilaporkan.
+
+### C. Repository GitHub
+
+- Nama repository: `Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM`
+- Visibilitas wajib **Public**.
+- Link script GEE harus dapat diakses (*anyone with the link can view*).
+
+### D. Struktur Repository
+
+```
+Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM/
+├── README.md
+├── script/
+│   └── klasifikasi_rf.js
+└── gambar/
+    ├── 01_lokasi_kajian.png
+    ├── 02_citra_komposit.png
+    ├── 03_sebaran_sampel_latih.png
+    ├── 04_sebaran_sampel_validasi.png
+    ├── 05_peta_klasifikasi.png
+    ├── 06_confusion_matrix.png
+    └── 07_feature_importance.png
+```
+
+### E. Isi Folder `script/`
+
+- File `klasifikasi_rf.js` berisi **salinan lengkap kode GEE** Anda. Salinan ini penting karena link GEE bisa berubah atau hilang.
+- Kode harus **rapi dan berkomentar**, dengan bagian-bagian berurutan:
+  1. Definisi area kajian
+  2. Pemanggilan dan pra-pemrosesan citra (masking awan, komposit)
+  3. Penambahan prediktor (indeks, topografi)
+  4. Pengambilan sampel
+  5. Pembagian data latih dan uji
+  6. Pelatihan Random Forest dan hyperparameter tuning
+  7. Klasifikasi
+  8. Evaluasi akurasi
+  9. Visualisasi dan ekspor
+- Kode harus **bisa dijalankan** tanpa error jika disalin ke GEE Code Editor.
+- Tautan script GEE dicantumkan di README.
+
+### F. Isi Folder `gambar/`
+
+Gunakan nama file yang jelas dan berurutan. Setiap gambar dirujuk di README dengan keterangan (*caption*). Gambar minimal:
+
+1. **Lokasi kajian**: batas area dan posisinya.
+2. **Citra komposit** yang dipakai sebagai input.
+3. **Sebaran sampel** latih dan uji per kelas.
+4. **Peta hasil klasifikasi** dengan legenda 4 kelas atau lebih.
+5. **Confusion matrix** (boleh berupa tangkapan layar console atau tabel).
+6. **Feature importance**.
+
+### G. Isi `README.md`
+
+README adalah **laporan utama**. Setiap bagian berikut wajib ada:
+
+1. **Judul dan identitas**: judul tugas, nama, NIM, mata kuliah, tanggal.
+2. **Tautan penting**: link script GEE.
+3. **Latar belakang**: mengapa lokasi ini dipilih dan apa pentingnya informasi penutup lahan di sana (2–3 paragraf).
+4. **Tujuan**.
+5. **Area kajian**: deskripsi lokasi, luas kasar, dan karakteristik lahannya, disertai gambar 01.
+6. **Data dan prediktor**:
+   - Tabel data yang dipakai: nama dataset, sensor, tanggal/periode, resolusi, dan sumber.
+   - Tabel prediktor beserta **alasan pemilihan tiap prediktor**.
+   - Penjelasan pra-pemrosesan (masking awan, komposit median, dsb.).
+7. **Metode**:
+   - Definisi kelas dan ciri visualnya.
+   - Cara pengambilan sampel, jumlah per kelas, dan skema pembagian latih/uji.
+   - Parameter Random Forest (jumlah pohon, dll.) beserta alasannya.
+   - Alur kerja singkat.
+8. **Hasil**:
+   - Peta klasifikasi (gambar 05) dengan keterangan penjelasan.
+   - Feature importance (gambar 07) dengan keterangan penejalasan.
+   - **Confusion matrix** (gambar 06) dan tabel metrik: overall accuracy, kappa, producer's accuracy dan user's accuracy per kelas dan diberikan penjelasan singkat.
+   - Luas tiap kelas.
+9. **Pembahasan**:
+   - Kelas dengan akurasi tertinggi dan terendah.
+   - Kelas yang sering tertukar (misalnya lahan terbuka vs lahan terbangun) dan **penyebabnya**.
+   - Pengaruh prediktor terhadap hasil.
+   - Keterbatasan (awan, sampel, resolusi) dan saran perbaikan.
+10. **Kesimpulan**: 1–2 paragraf.
+11. **Cara menjalankan ulang**: langkah singkat agar orang lain bisa mereproduksi hasil.
+12. **Referensi**: sumber data dan literatur yang dipakai.
+
+---
 
 
 ## Referensi dokumentasi
