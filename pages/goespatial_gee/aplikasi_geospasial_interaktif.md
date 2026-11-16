@@ -1741,3 +1741,89 @@ ui.root.add(rightPanel);
 7. **Menampilkan hasil analisis:** Menggunakan `.evaluate()` dan `.setValue()` untuk menampilkan statistik dan metrik evaluasi yang dihitung di server.
 8. **Menyajikan grafik:** Menampilkan grafik observasi-prediksi dan *feature importance*.
 9. **Menyusun antarmuka:** Menambahkan panel ke `ui.root` agar komponen dapat digunakan dalam aplikasi.
+
+---
+
+# Deskripsi Tugas
+## Ketentuan Umum Tugas Aplikasi Geospasial Interaktif di GEE
+
+- Tugas dikerjakan **individu**.
+- Setiap tugas dikumpulkan dalam **repository GitHub masing-masing**.
+- Seluruh repository wajib berstatus **Public**. Repository private atau yang tidak bisa dibuka dinilai **tidak dikumpulkan**.
+- Pemeriksaan: buka link repository di **jendela incognito/private** browser. Jika bisa dibuka tanpa login, berarti sudah publik.
+- Penamaan repository: `spasial-prog-[NIM]-gee-app`.
+- Link repository tugas dikirim lewat Pengumpulan Tugas di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
+
+## A. Tujuan
+
+Mahasiswa mampu mengemas hasil analisis geospasial menjadi aplikasi web interaktif menggunakan GEE UI sehingga dapat dipakai pengguna lain tanpa mengubah kode.
+
+## B. Ketentuan Pengerjaan
+
+1. Konten aplikasi menggunakan hasil **Tugas 1 atau Tugas 2**.
+2. Komponen minimal **sesuai praktikum di kelas**. Sebagai gambaran: peta utama, panel kontrol/widget interaktif, layer hasil analisis, legenda, dst. Cocokkan dengan daftar komponen pada materi praktikum, dan tulis di README komponen mana yang sudah dipenuhi serta penambahan komponen lain diperbolehkan.
+3. Aplikasi harus **dapat dibuka dan dipakai** oleh orang lain lewat link tanpa mengedit kode.
+4. Fitur tambahan, misalnya grafik, pemilih tahun, atau tombol unduh, mendapat nilai tambah.
+
+## C. Repository GitHub
+
+- Nama repository: `spasial-prog-[NIM]-gee-app`
+- Visibilitas wajib **Public** (periksa lewat jendela incognito).
+- **Link GEE App dan link script GEE juga harus bisa diakses publik.** Saat *publish* aplikasi di GEE, pilih akses yang memungkinkan siapa saja membuka.
+
+## D. Struktur Repository
+
+```
+spasial-prog-[NIM]-gee-app/
+├── README.md
+├── script/
+│   └── app.js
+└── gambar/
+    ├── 01_tampilan_utama.png
+    ├── 02_panel_kontrol.png
+    └── 03_contoh_hasil_interaksi.png         
+```
+
+## E. Isi Folder `script/`
+
+- File `app.js` berisi **salinan lengkap kode aplikasi**.
+- Kode disusun berurutan dan berkomentar:
+  1. Pemuatan data atau aset
+  2. Definisi fungsi
+  3. Pembuatan komponen UI (panel, widget, legenda, dst)
+  4. Inisialisasi tampilan awal
+- Jika aplikasi memakai **aset GEE** (hasil dari Tugas 1 atau 2), pastikan asetnya **dibagikan publik** agar aplikasi tidak error bagi pengguna lain. Jelaskan asal asetnya di README.
+- Link script GEE (akses *anyone with the link can view*) dicantumkan di README.
+
+## F. Isi Folder `gambar/`
+
+Tangkapan layar harus jelas dan menampilkan aplikasi yang **sedang berjalan**, bukan hanya kode:
+
+1. **Tampilan utama** saat aplikasi pertama dibuka.
+2. **Panel kontrol/widget** dengan anotasi atau keterangan fungsi tiap komponen.
+3. **Contoh hasil interaksi**, yaitu tampilan setelah pengguna memilih sesuatu (misalnya memilih layer, tahun, atau mengklik peta).
+4. **Legenda** (jika tidak terlihat jelas di gambar lain).
+
+Beri anotasi (kotak/nomor/panah) pada tangkapan layar agar penjelasan di README mudah diikuti.
+
+## G. Isi `README.md`
+
+1. **Judul dan identitas**: judul aplikasi, nama, NIM, mata kuliah, tanggal.
+2. **Tautan penting** (bagian paling atas dan mencolok):
+   - **Link GEE App** (aplikasi yang sudah dipublikasikan).
+   - Link script GEE.
+   - Link repository asal hasil analisis (repository Tugas 1 atau 2).
+3. **Latar belakang dan tujuan aplikasi**: untuk siapa dan untuk menjawab kebutuhan apa.
+4. **Sumber data dan konten**:
+   - Hasil analisis mana yang dipakai (Tugas 1 atau 2) dan alasan pilihannya.
+   - Dataset/aset yang dimuat, sumber, dan periodenya.
+5. **Fitur dan komponen aplikasi**:
+   - Tabel komponen: nama komponen, fungsi, dan letaknya di aplikasi.
+   - Tandai komponen minimal praktikum yang sudah dipenuhi.
+   - Fitur tambahan (jika ada).
+6. **Cara menggunakan aplikasi**: langkah bernomor yang bisa diikuti pengguna awam, dilengkapi tangkapan layar (gambar 01–03).
+7. **Cara kerja singkat (metode)**: bagaimana kode menghubungkan widget dengan peta, dijelaskan secaara singkat atau diagram sederhana.
+8. **Hasil**: contoh keluaran aplikasi dan interpretasinya.
+9. **Keterbatasan dan rencana pengembangan**: apa yang belum bisa dilakukan aplikasi dan apa yang bisa ditambahkan.
+10. **Kesimpulan**.
+11. **Referensi**.

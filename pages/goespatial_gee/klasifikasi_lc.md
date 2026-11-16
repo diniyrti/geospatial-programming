@@ -1945,8 +1945,8 @@ print('Model Random Forest:', model_RF);
 ```
 ---
 
-## Deskripsi Tugas
-### Ketentuan Umum Tugas Klasifikasi Penutup Lahan Menggunakan Random Forest di GEE
+# Deskripsi Tugas
+## Ketentuan Umum Tugas Klasifikasi Penutup Lahan Menggunakan Random Forest di GEE
 
 - Tugas dikerjakan **individu**.
 - Setiap tugas dikumpulkan dalam **repository GitHub masing-masing**.
@@ -1955,11 +1955,11 @@ print('Model Random Forest:', model_RF);
 - Penamaan repository: `Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM`.
 - Link repository tugas dikirim lewat Pengumpulan Tugas di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
 
-### A. Tujuan
+## A. Tujuan
 
 Mahasiswa mampu menerapkan klasifikasi penutup lahan terbimbing dengan algoritma Random Forest di Google Earth Engine pada lokasi kajian yang berbeda dari praktikum, serta menjelaskan pilihan data dan hasilnya secara ilmiah.
 
-### B. Ketentuan Pengerjaan
+## B. Ketentuan Pengerjaan
 
 1. Pilih **lokasi kajian yang berbeda dari praktikum**. 
 2. Klasifikasi minimal **4 kelas**: vegetasi, badan air, lahan terbuka, dan lahan terbangun. Kelas tambahan boleh.
@@ -1967,13 +1967,13 @@ Mahasiswa mampu menerapkan klasifikasi penutup lahan terbimbing dengan algoritma
 4. Seluruh proses klasifikasi dikerjakan di **Google Earth Engine**.
 5. Sampel latih dan sampel uji harus **terpisah**, dan jumlah sampel tiap kelas dilaporkan.
 
-### C. Repository GitHub
+## C. Repository GitHub
 
 - Nama repository: `Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM`
 - Visibilitas wajib **Public**.
 - Link script GEE harus dapat diakses (*anyone with the link can view*).
 
-### D. Struktur Repository
+## D. Struktur Repository
 
 ```
 Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM/
@@ -1990,7 +1990,7 @@ Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM/
     └── 07_feature_importance.png
 ```
 
-### E. Isi Folder `script/`
+## E. Isi Folder `script/`
 
 - File `klasifikasi_rf.js` berisi **salinan lengkap kode GEE** Anda. Salinan ini penting karena link GEE bisa berubah atau hilang.
 - Kode harus **rapi dan berkomentar**, dengan bagian-bagian berurutan:
@@ -2006,7 +2006,7 @@ Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM/
 - Kode harus **bisa dijalankan** tanpa error jika disalin ke GEE Code Editor.
 - Tautan script GEE dicantumkan di README.
 
-### F. Isi Folder `gambar/`
+## F. Isi Folder `gambar/`
 
 Gunakan nama file yang jelas dan berurutan. Setiap gambar dirujuk di README dengan keterangan (*caption*). Gambar minimal:
 
@@ -2017,7 +2017,7 @@ Gunakan nama file yang jelas dan berurutan. Setiap gambar dirujuk di README deng
 5. **Confusion matrix** (boleh berupa tangkapan layar console atau tabel).
 6. **Feature importance**.
 
-### G. Isi `README.md`
+## G. Isi `README.md`
 
 README adalah **laporan utama**. Setiap bagian berikut wajib ada:
 
