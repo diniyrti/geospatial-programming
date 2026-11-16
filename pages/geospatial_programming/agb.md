@@ -1530,8 +1530,8 @@ Dokumentasi berikut dapat digunakan untuk mempelajari pustaka dan produk data ya
 10. GEDI04_B_002: https://developers.google.com/earth-engine/datasets/catalog/LARSE_GEDI_GEDI04_B_002
 
 
-## Deskripsi Tugas
-### Ketentuan Umum Tugas Regresi Menggunakan Random Forest di Google Colab
+# Deskripsi Tugas
+## Ketentuan Umum Tugas Regresi Menggunakan Random Forest di Google Colab
 
 - Tugas dikerjakan **individu**.
 - Setiap tugas dikumpulkan dalam **repository GitHub masing-masing**.
@@ -1540,7 +1540,7 @@ Dokumentasi berikut dapat digunakan untuk mempelajari pustaka dan produk data ya
 - Penamaan repository: `regresi_rf_nim`.
 - Link repository tugas dikirim lewat Pengumpulan Tugas di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
 
-### A. Tujuan
+## A. Tujuan
 
 Mahasiswa mampu membangun, mengevaluasi, dan menginterpretasi model regresi Random Forest Python di Google Colab.
 
@@ -1552,21 +1552,19 @@ Mahasiswa mampu membangun, mengevaluasi, dan menginterpretasi model regresi Rand
 4. Data dibagi menjadi data latih dan uji. Skema pembagiannya harus dijelaskan.
 5. Evaluasi dengan minimal **R² dan RMSE**.
 
-### C. Repository GitHub
+## C. Repository GitHub
 
 - Nama repository: `regresi_rf_nim`
 - Visibilitas wajib **Public** (periksa lewat jendela incognito).
 - Link Colab harus dapat diakses (*Anyone with the link: Viewer*).
 
-### D. Struktur Repository
+## D. Struktur Repository
 
 ```
-spasial-prog-[NIM]-regresi-agbd/
+regresi_rf_nim/
 ├── README.md
 ├── notebook/
 │   └── regresi_agbd.ipynb
-├── data/                          (opsional, hanya data kecil)
-│   └── README_data.md
 └── gambar/
     ├── 01_wilayah_kajian.png
     ├── 02_sebaran_agbd.png
@@ -1575,14 +1573,14 @@ spasial-prog-[NIM]-regresi-agbd/
     └──05_peta_prediksi_agbd.png
 ```
 
-#### E. Isi Folder `notebook/`
+## E. Isi Folder `notebook/`
 
 - File `regresi_agbd.ipynb` harus **tersimpan lengkap dengan output sel** (grafik dan hasil tampil), supaya terbaca langsung di GitHub tanpa dijalankan.
 - Notebook harus **bisa dijalankan dari sel pertama sampai terakhir** (*Runtime → Run all*) tanpa error.
 - Struktur notebook:
   1. Judul dan identitas
   2. Instalasi/impor pustaka
-  3. Pemanggilan atau pemuatan data
+  3. Load data yang digunakan
   4. Eksplorasi data
   5. Pembagian data latih dan uji
   6. Pelatihan model (dan tuning bila ada)
@@ -1593,9 +1591,8 @@ spasial-prog-[NIM]-regresi-agbd/
 - Gunakan **sel teks (markdown)** untuk menjelaskan tiap tahap, bukan hanya kode, dan beri komentar pada kode yang penting.
 - Tautan Colab dicantumkan di README.
 - **Jangan menaruh kunci/token pribadi** di dalam notebook.
-- Jika data besar, jangan diunggah. Cukup beri tautan sumber dan petunjuk cara mengunduhnya di `data/README_data.md`.
 
-### F. Isi Folder `gambar/`
+## F. Isi Folder `gambar/`
 
 Semua gambar dirujuk di README dengan *caption*. Grafik wajib punya judul, label sumbu, dan satuan. Gambar minimal:
 
@@ -1609,9 +1606,9 @@ Semua gambar dirujuk di README dengan *caption*. Grafik wajib punya judul, label
 
 1. **Judul dan identitas**: judul, nama, NIM, mata kuliah, tanggal.
 2. **Tautan penting**: link Colab dan nama file notebook di repository.
-3. **Latar belakang**: pentingnya estimasi biomassa atas permukaan dan alasan memilih wilayah ini.
+3. **Latar belakang**: pentingnya estimasi biomassa atas permukaan dan alasan memilih wilayah kajian.
 4. **Tujuan**.
-5. **Wilayah kajian**: gambaran umum wilayah dan tipe tutupan utamanya, dengan gambar 01.
+5. **Wilayah kajian**: gambaran umum wilayah, dengan gambar 01.
 6. **Data**:
    - Sumber data AGBD (nama dataset, periode, resolusi).
    - Daftar prediktor beserta sumber, resolusi, dan alasan pemilihannya.
