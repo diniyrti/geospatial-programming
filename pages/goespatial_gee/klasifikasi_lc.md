@@ -1953,7 +1953,7 @@ print('Model Random Forest:', model_RF);
 - Seluruh repository wajib berstatus **Public**. Repository private atau yang tidak bisa dibuka dinilai **tidak dikumpulkan**.
 - Pemeriksaan: buka link repository di **jendela incognito/private** browser. Jika bisa dibuka tanpa login, berarti sudah publik.
 - Penamaan repository: `Klasifikasi Penutup Lahan_Nama Lokasi Kajian_NIM`.
-- Link repository tugas dikirim lewat Pengumpulan Tugas di Sikolah di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
+- Link repository tugas dikirim lewat Pengumpulan Tugas di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
 
 ### A. Tujuan
 
@@ -2021,11 +2021,11 @@ Gunakan nama file yang jelas dan berurutan. Setiap gambar dirujuk di README deng
 
 README adalah **laporan utama**. Setiap bagian berikut wajib ada:
 
-1. **Judul dan identitas**: judul tugas, nama, NIM, mata kuliah, tanggal.
+1. **Judul dan identitas**: judul tugas, nama, NIM, mata kuliah.
 2. **Tautan penting**: link script GEE.
 3. **Latar belakang**: mengapa lokasi ini dipilih dan apa pentingnya informasi penutup lahan di sana (2–3 paragraf).
 4. **Tujuan**.
-5. **Area kajian**: deskripsi lokasi, luas kasar, dan karakteristik lahannya, disertai gambar 01.
+5. **Area kajian**: deskripsi lokasi, luas, dan karakteristik lahannya, disertai gambar 01.
 6. **Data dan prediktor**:
    - Tabel data yang dipakai: nama dataset, sensor, tanggal/periode, resolusi, dan sumber.
    - Tabel prediktor beserta **alasan pemilihan tiap prediktor**.
