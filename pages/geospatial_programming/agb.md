@@ -1528,3 +1528,110 @@ Dokumentasi berikut dapat digunakan untuk mempelajari pustaka dan produk data ya
 8. MODIS MCD12Q1.061: https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MCD12Q1
 9. Google Satellite Embedding V1 Annual: https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_SATELLITE_EMBEDDING_V1_ANNUAL
 10. GEDI04_B_002: https://developers.google.com/earth-engine/datasets/catalog/LARSE_GEDI_GEDI04_B_002
+
+
+## Deskripsi Tugas
+### Ketentuan Umum Tugas Regresi Menggunakan Random Forest di Google Colab
+
+- Tugas dikerjakan **individu**.
+- Setiap tugas dikumpulkan dalam **repository GitHub masing-masing**.
+- Seluruh repository wajib berstatus **Public**. Repository private atau yang tidak bisa dibuka dinilai **tidak dikumpulkan**.
+- Pemeriksaan: buka link repository di **jendela incognito/private** browser. Jika bisa dibuka tanpa login, berarti sudah publik.
+- Penamaan repository: `regresi_rf_nim`.
+- Link repository tugas dikirim lewat Pengumpulan Tugas di Sikola pada kolom pengumpulan tugas masing-masing, dalam bentuk teks dengan format yang ditentukan  (nama, NIM, link repository). Tulis link lengkap dan pastikan bisa dibuka tanpa login.
+
+### A. Tujuan
+
+Mahasiswa mampu membangun, mengevaluasi, dan menginterpretasi model regresi Random Forest Python di Google Colab.
+
+## B. Ketentuan Pengerjaan
+
+1. Pilih **provinsi/wilayah selain Sulawesi Tenggara** (sudah dipakai di kelas). Daftarkan pilihan Anda ke dosen.
+2. Data AGBD dan prediktor menggunakan data yang berbeda dari praktikum dikelas.
+3. Dikerjakan di **Google Colab (Python)**.
+4. Data dibagi menjadi data latih dan uji. Skema pembagiannya harus dijelaskan.
+5. Evaluasi dengan minimal **R² dan RMSE**.
+
+### C. Repository GitHub
+
+- Nama repository: `regresi_rf_nim`
+- Visibilitas wajib **Public** (periksa lewat jendela incognito).
+- Link Colab harus dapat diakses (*Anyone with the link: Viewer*).
+
+### D. Struktur Repository
+
+```
+spasial-prog-[NIM]-regresi-agbd/
+├── README.md
+├── notebook/
+│   └── regresi_agbd.ipynb
+├── data/                          (opsional, hanya data kecil)
+│   └── README_data.md
+└── gambar/
+    ├── 01_wilayah_kajian.png
+    ├── 02_sebaran_agbd.png
+    ├── 03_scatter_obs_vs_pred.png
+    ├── 04_feature_importance.png
+    └──05_peta_prediksi_agbd.png
+```
+
+#### E. Isi Folder `notebook/`
+
+- File `regresi_agbd.ipynb` harus **tersimpan lengkap dengan output sel** (grafik dan hasil tampil), supaya terbaca langsung di GitHub tanpa dijalankan.
+- Notebook harus **bisa dijalankan dari sel pertama sampai terakhir** (*Runtime → Run all*) tanpa error.
+- Struktur notebook:
+  1. Judul dan identitas
+  2. Instalasi/impor pustaka
+  3. Pemanggilan atau pemuatan data
+  4. Eksplorasi data
+  5. Pembagian data latih dan uji
+  6. Pelatihan model (dan tuning bila ada)
+  7. Evaluasi
+  8. Interpretasi (*feature importance*)
+  9. Prediksi spasial
+  10. Penyimpanan hasil
+- Gunakan **sel teks (markdown)** untuk menjelaskan tiap tahap, bukan hanya kode, dan beri komentar pada kode yang penting.
+- Tautan Colab dicantumkan di README.
+- **Jangan menaruh kunci/token pribadi** di dalam notebook.
+- Jika data besar, jangan diunggah. Cukup beri tautan sumber dan petunjuk cara mengunduhnya di `data/README_data.md`.
+
+### F. Isi Folder `gambar/`
+
+Semua gambar dirujuk di README dengan *caption*. Grafik wajib punya judul, label sumbu, dan satuan. Gambar minimal:
+
+1. **Wilayah kajian**.
+2. **Sebaran AGBD** (histogram atau peta titik sampel).
+3. **Scatter plot observasi vs prediksi** dengan garis 1:1 serta nilai R² dan RMSE.
+4. **Feature importance**.
+5. **Peta prediksi AGBD** dengan legenda dan satuan (Mg/ha).
+
+## G. Isi `README.md`
+
+1. **Judul dan identitas**: judul, nama, NIM, mata kuliah, tanggal.
+2. **Tautan penting**: link Colab dan nama file notebook di repository.
+3. **Latar belakang**: pentingnya estimasi biomassa atas permukaan dan alasan memilih wilayah ini.
+4. **Tujuan**.
+5. **Wilayah kajian**: gambaran umum wilayah dan tipe tutupan utamanya, dengan gambar 01.
+6. **Data**:
+   - Sumber data AGBD (nama dataset, periode, resolusi).
+   - Daftar prediktor beserta sumber, resolusi, dan alasan pemilihannya.
+   - Pra-pemrosesan
+7. **Metode**:
+   - Skema pembagian latih/uji.
+   - Parameter Random Forest dan proses tuning.
+   - Metrik evaluasi yang dipakai dan alasannya.
+   - Diagram alur sederhana (opsional).
+8. **Hasil**:
+   - Tabel metrik (R², RMSE) untuk data latih dan uji.
+   - Scatter plot (gambar 03) dan feature importance (gambar 04).
+   - Peta prediksi AGBD (gambar 05).
+9. **Pembahasan**:
+   - Apakah model *overfitting* (bandingkan metrik latih vs uji).
+   - Prediktor paling berpengaruh dan **alasan ilmiahnya**.
+   - Di mana model cenderung under/overestimate (misalnya pada biomassa tinggi) dan penyebabnya.
+   - Keterbatasan data dan saran perbaikan.
+10. **Kesimpulan**.
+11. **Cara menjalankan ulang**: urutan langkah di Colab, termasuk cara mengakses data.
+12. **Referensi**.
+
+---
